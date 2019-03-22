@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1,maximum-scale=1,user-scalable=no"> -->
+    <!-- <style type="text/css">
+      html,body{height: 100%;font-family:"MicrosoftYaHei-Bold, Microsoft YaHei"}
+    </style> -->
+    
+    <title>市政二期APP</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>您的浏览器版本过低，请升级浏览器或下载最新版本Google Chrome浏览器！</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>

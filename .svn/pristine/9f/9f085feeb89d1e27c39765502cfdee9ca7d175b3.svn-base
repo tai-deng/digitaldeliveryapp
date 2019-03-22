@@ -1,0 +1,10 @@
+##首页模块说明
+
+#目录结构
+  index.vue              --  首页组件
+  index_modules          --  mixin混入，类，工具包等js文件
+  index_components       --  首页公共组件
+
+
+#开发说明：
+ ...

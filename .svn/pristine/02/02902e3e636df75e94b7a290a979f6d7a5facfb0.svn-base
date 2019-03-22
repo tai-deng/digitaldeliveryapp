@@ -1,0 +1,9 @@
+/**
+ * 所有状态，请用注释区分
+ */
+export default{
+  // 
+  pageActive:0,//主导航的下标
+  isShowMenu:false,//侧边栏用户中心是否打开
+  index:9
+}

@@ -1,0 +1,22 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+const login = ()=> import('@/components/login/login')
+import themeNavPageRouter from './routers/theme-nav-page-router.js'
+import indexRouter from './routers/index_router.js'
+import dynamicRouter from './routers/dynamic_router.js'
+import issueRouter from './routers/issue_router.js'
+import userRouter from './routers/user_router.js'
+
+
+Vue.use(Router)
+
+export default new Router({
+  routes: [
+    {path:'/login',name:'登录',component:login},
+    ...themeNavPageRouter,
+    ...indexRouter,
+    ...dynamicRouter,
+    ...issueRouter,
+    ...userRouter
+  ]
+})
