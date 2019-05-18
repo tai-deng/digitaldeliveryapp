@@ -1,0 +1,534 @@
+<!-- 首页 -->
+<template>
+  <div class="container-index">
+    <div class="warpper">
+      <div>
+        <!-- 头部 -->
+        <div class="nav-bar">
+          <div class="left" @click="onClickLeft">
+            <p>
+              <img src="./assets/9.png" class="avater" alt slot="left">
+            </p>
+            <p class="user-name">
+              <span>李建工</span>
+              <br>
+              <span>施工员</span>
+            </p>
+          </div>
+          <div class="title">首页</div>
+          <div class="right" @click="handle">
+            <img class="canmna" src="./assets/10.png" alt>
+          </div>
+        </div>
+        <!-- 内容-->
+        <div class="center">
+          <!-- 8个图标-->
+          <div class="icon-8">
+            <div @click="$router.push({path:'/timeManagement'})">
+              <p>
+                <img src="./assets/1.png" class="img-size">
+              </p>
+              <p class="nav-name">时间管理</p>
+            </div>
+            <div @click="$router.push({path:'/rangeManagement'})">
+              <p>
+                <img src="./assets/2.png" class="img-size">
+              </p>
+              <p class="nav-name">范围管理</p>
+            </div>
+            <div @click="$router.push({path:'/modules/allPurchase'})">
+              <p>
+                <img src="./assets/3.png" class="img-size">
+              </p>
+              <p class="nav-name">采购管理</p>
+            </div>
+            <div @click="$router.push({path:'/CostControl'})">
+              <p>
+                <img src="./assets/4.png" class="img-size">
+              </p>
+              <p class="nav-name">成本管理</p>
+            </div>
+            <div @click="$router.push({path:'/quality'})">
+              <p>
+                <img src="./assets/5.png" class="img-size">
+              </p>
+              <p class="nav-name">质量管理</p>
+            </div>
+            <div @click="$router.push({path:'/Risk'})">
+              <p>
+                <img src="./assets/6.png" class="img-size">
+              </p>
+              <p class="nav-name">风险管理</p>
+            </div>
+            <div @click="$router.push({path:'/humanResources'})">
+              <p>
+                <img src="./assets/7.png" class="img-size">
+              </p>
+              <p class="nav-name">人力资源</p>
+            </div>
+            <div @click="$router.push({path:'/talking'})">
+              <p>
+                <img src="./assets/8.png" class="img-size">
+              </p>
+              <p class="nav-name">沟通管理</p>
+            </div>
+          </div>
+          <!-- 消息中心-->
+          <div class="message">
+            <div class="message-header">
+              <p>
+                <img class="icon-11" src="./assets/11.png" alt>
+                <span class="mess-title">消息中心</span>
+              </p>
+              <p @click="$router.push({path:'/my-issue',query:{id:0}})">
+                <span class="mess-title-2">查看更多</span>
+                <img class="icon-11" src="./assets/12.png" alt>
+              </p>
+            </div>
+            <ul class="message-list">
+              <li>XX某某时间节点，资料图片未及时认证</li>
+              <li>XX某某时间节点，资料图片未及时认证</li>
+              <li>XX某某时间节点，资料图片未及时认证</li>
+            </ul>
+          </div>
+          <!-- 我的任务 -->
+          <div class="message">
+            <div class="message-header">
+              <p>
+                <img class="icon-11" src="./assets/13.png" alt>
+                <span class="mess-title">我的任务</span>
+              </p>
+              <p @click="$router.push({path:'/my-issue',query:{id:1}})">
+                <span class="mess-title-2">查看更多</span>
+                <img class="icon-11" src="./assets/12.png" alt>
+              </p>
+            </div>
+            <van-tabs v-model="active" swipeable>
+              <van-tab title="我的发布">
+                <el-table :data="tableData" style="width: 100%">
+                  <el-table-column prop="building" label="楼栋" width="70px"></el-table-column>
+                  <el-table-column prop="name" label="任务名称"></el-table-column>
+                  <el-table-column prop="date" label="计划完成时间" width="120px"></el-table-column>
+                  <el-table-column label="状态" width="70px">
+                    <template slot-scope="scope">
+                      <span
+                        :style="{'color':scope.row.state=='正常'?'#00C187':'#FD4C58'}"
+                      >{{scope.row.state}}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </van-tab>
+              <van-tab title="待接收">内容 2</van-tab>
+              <van-tab title="进行中">内容 3</van-tab>
+              <van-tab title="已完成">内容 4</van-tab>
+            </van-tabs>
+          </div>
+        </div>
+        <div style="width:100%;height:60px"></div>
+        <transition name="layer-b">
+          <div class="layer-bg" v-if="isShowMenu"></div>
+        </transition>
+        <van-actionsheet
+          v-model="show"
+          :actions="actions"
+          cancel-text="取消"
+          @select="onSelect"
+          @cancel="onCancel"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+// vuex
+import { mapMutations } from "vuex";
+// import { Login } from "../../api/api.js";
+// 组件
+
+export default {
+  data() {
+    return {
+      active: 0,
+      tableData: [
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "滞后"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        }
+      ],
+      show: false,
+      actions: [
+        {
+          id: 0,
+          name: "拍照"
+        },
+        {
+          id: 0,
+          name: "从手机相册选择"
+        }
+      ]
+    };
+  },
+  created() {
+    // Login({
+    //   LoginName: "user",
+    //   LoginPwd: "888888"
+    // }).then(data => {
+    //   if (data.StatusCode === 200) {
+    //     // this.$store.commit("upisLogined", true);
+    //     // this.$router.push({ path: "/nav/to/index" });
+    //     this.$message({
+    //       type: "success",
+    //       message: "你好，登录成功",
+    //       center: "true"
+    //     });
+    //     // this.setUserInfo(data.Detiel[0]);
+    //     localStorage.setItem("token", data.Detiel[0].access_token);
+    //     localStorage.setItem("userId", data.Message);
+    //     localStorage.setItem("projectid", "12345678");
+    //   } else {
+    //     this.$message({
+    //       type: "error",
+    //       message: data.Message,
+    //       center: "true"
+    //     });
+    //   }
+    // });
+  },
+  computed: {
+    isShowMenu() {
+      return this.$store.getters.getIsShowMenu;
+    }
+  },
+  methods: {
+    onClickLeft() {
+      //打开侧边栏
+      this.upIsShowMenu(true);
+    },
+    onClickRight() {
+      // Toast('按钮');
+    },
+    ...mapMutations({
+      upIsShowMenu: "IS_SHOW_MENU"
+    }),
+    /**
+     * 点击拍照
+     */
+    handle() {
+      this.show = true;
+    },
+    /**
+     * 选择
+     */
+    onSelect(item) {
+      // 点击选项时默认不会关闭菜单，可以手动关闭
+      this.show = false;
+      console.log(item);
+    },
+    /**
+     * 取消
+     */
+    onCancel() {
+      console.log("取消");
+    }
+  },
+  components: {}
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-index {
+  width: 750px;
+  height: 100%;
+  overflow: auto;
+
+  .warpper {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    .nav-bar {
+      width: 100%;
+      height: 100px;
+      background-color: #699FFF;
+      display: flex;
+      justify-content: space-between;
+
+      .left {
+        display: flex;
+        width: 230px;
+
+        .user-name {
+          box-sizing: border-box;
+          padding: 12px 0 0 12px;
+
+          span {
+            display: inline-block;
+            font-size: 28px;
+            font-family: SourceHanSansCN-Regular;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 1);
+            line-height: 32px;
+            padding-top: 5px;
+          }
+        }
+
+        .avater {
+          width: 80px;
+          height: 80px;
+          display: inline-block;
+          padding: 12px 0 0 20px;
+        }
+      }
+
+      .title {
+        flex: 1;
+        text-align: center;
+        font-size: 36px;
+        font-family: SourceHanSansCN-Medium;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 1);
+        line-height: 100px;
+      }
+
+      .right {
+        width: 230px;
+
+        .canmna {
+          width: 40px;
+          height: 30px;
+          float: right;
+          padding: 30px 20px;
+        }
+      }
+    }
+
+    .center {
+      .icon-8 {
+        box-sizing: border-box;
+        box-shadow: 0px 2px 8px 0px rgba(220, 226, 237, 1);
+        padding: 0 20px;
+        width: 100%;
+        height: 412px;
+        background-color: white;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        padding-bottom: 20px;
+
+        >div {
+          width: 160px;
+          padding-top: 30px;
+
+          p {
+            text-align: center;
+
+            .img-size {
+              width: 100px;
+              height: 100px;
+              background: linear-gradient(180deg, rgba(255, 201, 141, 1) 0%, rgba(253, 179, 61, 1) 100%);
+              border-radius: 36px;
+            }
+          }
+
+          .nav-name {
+            font-size: 28px;
+            font-family: SourceHanSansCN-Regular;
+            font-weight: 400;
+            color: rgba(34, 40, 51, 1);
+            line-height: 42px;
+            margin-top: 10px;
+          }
+        }
+      }
+    }
+
+    .message {
+      margin: 20px 0 0 0;
+
+      .message-header {
+        height: 80px;
+        width: 100%;
+        display: flex;
+        background-color: white;
+        justify-content: space-between;
+        padding: 0 20px;
+        box-sizing: border-box;
+
+        p {
+          line-height: 80px;
+
+          img {
+            vertical-align: middle;
+          }
+
+          .mess-title, .mess-title-2 {
+            font-family: SourceHanSansCN-Medium;
+            line-height: 32px;
+            vertical-align: middle;
+            margin-left: 16px;
+          }
+
+          .mess-title {
+            color: rgba(38, 38, 38, 1);
+            font-size: 32px;
+            font-weight: 500;
+          }
+
+          .mess-title-2 {
+            color: #5A92FF;
+            font-weight: 400;
+            font-size: 28px;
+            margin-right: 6px;
+          }
+        }
+      }
+
+      .message-list {
+        width: 100%;
+        background-color: white;
+        box-sizing: border-box;
+        padding: 0 20px;
+        box-shadow: 0px 2px 8px 0px rgba(220, 226, 237, 1);
+
+        li {
+          height: 80px;
+          border-bottom: 1px solid #E5E5E5;
+          line-height: 80px;
+          font-size: 30px;
+          font-family: SourceHanSansCN-Medium;
+          font-weight: 500;
+          color: rgba(102, 102, 102, 1);
+        }
+      }
+    }
+
+    .layer-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      background-color: black;
+      opacity: 0.3;
+    }
+  }
+}
+
+.container-index {
+  width: 750px;
+  overflow: hidden;
+
+  .warpper {
+    width: 100%;
+    height: 100%;
+
+    .layer-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      background-color: black;
+      opacity: 0.3;
+    }
+  }
+}
+</style>
+<style>
+.layer-b-enter,
+.layer-b-leave-to {
+  opacity: 0 !important;
+}
+.layer-b-enter-active,
+.layer-b-leave-active {
+  transition: opacity 0.3s;
+}
+.layer-b-enter-to,
+.layer-b-leave {
+  opacity: 0.3;
+}
+</style>
+<style>
+.warpper .van-nav-bar,
+.warpper .van-nav-bar__title {
+  height: 100px;
+  line-height: 100px;
+}
+</style>
+<style>
+.icon-11 {
+  width: 35px;
+  height: 31px;
+}
+.message .van-tabs--line .van-tabs__wrap {
+  height: 58px;
+}
+.message .van-tab span {
+  font-size: 30px;
+  font-family: SourceHanSansCN-Medium;
+  font-weight: 500;
+  color: rgba(38, 38, 38, 1);
+  line-height: 58px;
+}
+.message .van-tabs__line {
+  background-color: #5a92ff;
+  height: 4px;
+}
+.message .van-tabs .van-tab__pane {
+  padding: 15px 0;
+}
+.message .el-table th > .cell {
+  font-size: 30px;
+  font-family: SourceHanSansCN-Normal;
+  font-weight: 400;
+  color: rgba(38, 38, 38, 1);
+  line-height: 46px;
+}
+.message .el-table .cell {
+  text-align: center;
+  font-size: 30px;
+  font-family: SourceHanSansCN-Normal;
+  font-weight: 400;
+  color: rgba(38, 38, 38, 1);
+  line-height: 46px;
+  padding: 20px 0;
+}
+.message .el-table th {
+  background: rgba(238, 238, 238, 1);
+}
+.container-index .van-actionsheet__cancel,
+.van-actionsheet__item {
+  height: 88px;
+  line-height: 88px;
+  font-size: 32px;
+  font-family: SourceHanSansCN-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.container-index .van-actionsheet__cancel {
+  color: #666666;
+}
+</style>
+

@@ -1,0 +1,172 @@
+
+<!-- 设置页面 Modify -->
+<template>
+  <div class="container-Modify">
+    <van-nav-bar title="个人信息" left-arrow border @click-left="onClickLeft"></van-nav-bar>
+    <van-cell-group>
+      <van-field v-model="post.cName" clearable input-align="right" @blur="changeAll" label="姓名"/>
+      <div class="line"></div>
+      <van-field v-model="post.cPhone" clearable input-align="right" @blur="changeAll" label="手机号"/>
+      <div class="line"></div>
+
+      <van-field v-model="post.cDepName"  input-align="right" readonly label="部门"/>
+      
+
+      <div class="line"></div>
+      <!-- <van-field v-model="post.cRoleName" input-align="right" readonly label="岗位"/> -->
+      <van-field  label="岗位" right-icon="arrow" input-align="right"  disabled  v-model="operationCategory"  @click-right-icon="choiceDep"/>
+      <div class="line"></div>
+      <van-field v-model="post.WeChatNo" clearable input-align="right" @blur="changeAll" label="微信号"/>
+      <div class="line"></div>
+      <van-field v-model="post.Email" clearable input-align="right" @blur="changeAll" label="邮箱"/>
+    </van-cell-group>
+
+
+    <van-popup v-model="operationCategory_show" position="bottom" class="iPopup">
+          <van-picker
+            show-toolbar
+            title="岗位选择"
+            :columns="operationCategory_columns"
+            @cancel="onOperationCategoryCancel"
+            @confirm="onOperationCategoryConfirm"/>
+    </van-popup>
+  </div>
+</template>
+
+<script type='textecmascript-6'> 
+import {MdfUser,GetLoginUserInfo,GetRoleList,UpdateRole} from '@/api/api.js'
+export default {
+  data() {
+    return {
+      post:{},
+      operationCategory_show:false,//部门下拉是否显示
+      operationCategory_columns:[{value:'1',text:'测试员'},{value:'2',text:'消防员'}],
+      operationCategory:'',
+    };
+  },
+  created(){
+    // var text=localStorage.getItem('loginUserInfo');
+    // this.post=JSON.parse(text).loginUserInfo;
+    // console.log(JSON.parse(text));
+    this.getLogin();
+    this.GetRoleList();
+  },
+  methods: {
+    onClickLeft() {
+      this.$router.back(-1);
+    },
+    //失去焦点的时候修改个人信息---部门/岗位？？
+    changeAll(){
+      var projectid=localStorage.getItem('projectid');
+      var post={
+        CurUserID:this.post.ID,
+        UserName:this.post.cUserName,
+        Name:this.post.cName,
+        Tel:this.post.cPhone,
+        Email:this.post.Email,
+        WeChatNo:this.post.WeChatNo,
+        iSys_Dep_ID:this.post.iSys_Dep_ID,
+        iSys_Company_ID:this.post.iSys_Company_ID,
+        ProjectID:projectid,
+        Building:this.post.Building,
+        UserType:this.post.iUpdator,
+      };
+      this.Request(MdfUser(post)).then(res=>{
+        if(res.StatusCode=='200'){
+           this.$dialog.alert({message:'修改成功！'});
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //根据登陆者的id查询个人信息
+    getLogin(){
+      var text=localStorage.getItem('userId');
+      this.Request(GetLoginUserInfo({curUserId:text})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.post=res.Detiel[0].loginUserInfo;
+          this.post.ProjectID=res.Detiel[0].loginUserRoles[0].ProjectID;
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //点击选择部门
+    choiceDep(){
+      if (!this.operationCategory_show) {
+        this.operationCategory_show = true;
+      } else {
+        this.operationCategory_show = false;
+      }
+    },
+    //选择部门
+    onOperationCategoryConfirm(value) {
+      this.post.cRoleName = value.id;
+      this.operationCategory=value.text;
+      this.UpdateRole();
+      console.log(this.post.cRoleName)
+      this.operationCategory_show = false;
+    },
+    //取消选择部门
+    onOperationCategoryCancel() {
+      this.operationCategory_show = false;
+    },
+    //获取所有的岗位列表
+    GetRoleList(){
+      var projectid=localStorage.getItem('projectid');
+      this.Request(GetRoleList({ProjectID:projectid})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.operationCategory_columns=res.Detiel;
+          var list=this.operationCategory_columns.filter(i=>{
+            i.id=this.post.cRoleName;
+          })
+          //登录的时候，页面显示问题
+          for(var i=0;i<this.operationCategory_columns.length;i++){
+            if(this.operationCategory_columns[i].id==this.post.cRoleName){
+              this.operationCategory=this.operationCategory_columns[i].text;
+            }
+          }
+          console.log('登录显示',this.operationCategory);
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //修改角色 UpdateRole
+    UpdateRole(){
+      this.Request(UpdateRole({roleId:this.post.ID,roleName:this.post.cRoleName,userId:this.post.ID})).then(res=>{
+        console.log(res);
+      })
+    },
+
+
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+
+@import './user_assets/base.css';
+
+.container-Modify {
+  width: 100%;
+  height: 100%;
+  background: rgba(246, 248, 250, 1);
+
+  .line {
+    margin: 0 0.4rem 0 0.32rem;
+    height: 0.027rem;
+    background-color: #E5E5E5;
+  }
+
+  .van-cell {
+    height: 1.17rem;
+    background: rgba(255, 255, 255, 1);
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+    align-items: center;
+    padding: 0 0.4rem 0 0.32rem;
+  }
+}
+</style>

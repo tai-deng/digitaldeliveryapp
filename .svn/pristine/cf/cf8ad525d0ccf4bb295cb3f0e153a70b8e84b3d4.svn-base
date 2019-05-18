@@ -1,0 +1,271 @@
+<!-- daily日常巡检 -->
+<template>
+  <div class="container-daily">
+    <!-- 头部 -->
+    <van-nav-bar title="日常巡检" @click-left="goBack" fixed :border="false" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="Interlayer"></div>
+    <div class="wrapper">
+      <div class="details_box">
+        <div class="details">
+          <span>
+            主题:
+            <input type="text" placeholder="请输入主题文字" :value="valueTheme">
+          </span>
+        </div>
+        <div class="details" @click="isShowType">
+          <span>
+            问题类型:
+            <input type="text" placeholder="请选择问题类型" :value="valueType">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <div class="details">
+          <span>
+            发起人:
+            <span>李三思</span>
+          </span>
+        </div>
+        <div class="details" @click="isShowInitiationTime">
+          <span>
+            发起时间:
+            <input type="text" placeholder="请选择发起时间" :value="valueInitiation">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <div class="describe">
+          <span>
+            描述:
+            <span class="describe_content">a1栋地下室存在较大砂砾，基坑底部不平整。</span>
+          </span>
+        </div>
+      </div>
+      <div class="picture upload">
+        <p class="photo">上传照片</p>
+        <div class="photo_img">
+          <!-- <img class="photoImg" src="../../../assets/imgs/storied_building.png" alt> -->
+          <div class="Img">
+            <img class="photoImg" src="../../../assets/imgs/storied_building.png" alt>
+            <van-icon name="clear"/>
+          </div>
+          <div class="img">
+            <img class="upload_photos" src="../../../assets/imgs/upload_photos.png" alt>
+          </div>
+          <span>最多上传3张</span>
+        </div>
+      </div>
+      <div class="details_box">
+        <div class="details">
+          <span>
+            接收人:
+            <span>李三思 ; 王思思 ;</span>
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <div class="details details_border" @click="isShowEndTime">
+          <span>
+            整改截止时间:
+            <input type="text" placeholder="请选择整改截止时间" :value="valueEnd">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+      </div>
+      <div class="confirm completion" @click="complete">确认</div>
+    </div>
+    <van-actionsheet v-model="show_type">
+      <van-picker show-toolbar :columns="columnsType" @confirm="onConfirmType" @cancel="onCancel"/>
+    </van-actionsheet>
+    <van-actionsheet v-model="show_initiation_time">
+      <van-datetime-picker
+        v-model="valueInitiation"
+        type="date"
+        @confirm="onConfirmInitiation"
+        @cancel="onCancel"
+      />
+    </van-actionsheet>
+    <van-actionsheet v-model="show_end_time">
+      <van-datetime-picker
+        v-model="valueEnd"
+        type="date"
+        :min-date="minDate"
+        @confirm="onConfirmEnd"
+        @cancel="onCancel"
+      />
+    </van-actionsheet>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      show_initiation_time: false, //选择时间默认隐藏
+      show_end_time: false,//选择截止时间
+      show_type: false,//选择问题类型
+      valueTheme: '',//输入主题
+      columnsType: ["基础施工0", "基础施工1", "基础施工2", "基础施工3", "基础施工4"], //时间选择年
+      valueInitiation: '',//选择时间
+      valueType: '',//选择问题类型
+      valueEnd: '',//选择整改截止时间
+      minDate: new Date(), //最小选择时间
+    };
+  },
+  methods: {
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    },
+    //点击确认完成
+    complete() {
+      console.log('aaaaaaa',this.valueTheme)
+    },
+    //点击问题类型确定
+    onConfirmType(value) {
+      console.log(`当前值：${value}`);
+      this.valueType = value
+      this.show_type = false
+    },
+    //点击发起时间确定
+    onConfirmInitiation(value) {
+      console.log(`当前值：${value}`);
+      this.valueInitiation = require('moment')(value).format('YYYY.MM.DD')
+      this.show_initiation_time = false;
+    },
+    //点击整改截止时间确定
+    onConfirmEnd(value) {
+      console.log(`当前值：${value}`);
+      this.valueEnd = require('moment')(value).format('YYYY.MM.DD')
+      this.show_end_time = false
+    },
+    //取消
+    onCancel() {
+      console.log("取消");
+      this.show_initiation_time = false;
+      this.show_end_time = false
+      this.show_type = false
+    },
+    //选择发起时间
+    isShowInitiationTime() {
+      this.show_initiation_time = true;
+    },
+    //选择整改截止时间
+    isShowEndTime() {
+      this.show_end_time = true
+    },
+    //选择问题类型
+    isShowType() {
+      this.show_type = true
+    },
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-daily
+  width 100%
+  height 100%
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    .fontsize
+      font-size 42px
+      color #333
+      display inline-block
+      vertical-align middle
+  .Interlayer
+    height 88px
+  .wrapper
+    .details_box
+      box-sizing border-box
+      padding 0 22px
+      background-color #fff
+      font-size 30px
+      color #333
+      .details
+        height 88px
+        line-height 88px
+        border-bottom 2px solid #E5E5E5
+        .el-icon-arrow-right
+          line-height 88px
+          float right
+      .details_border
+        border 0
+      .describe
+        padding 25px 0 20px
+        .describe_content
+          display inline-block
+          width 100%
+          line-height 50px
+    .picture
+      box-sizing border-box
+      padding 0 22px 25px
+      font-size 30px
+      font-weight 500
+      color #333
+      .photo
+        line-height 90px
+        font-weight bold
+      .photo_img
+        .photoImg
+          margin-right 45px
+          width 200px
+          height 200px
+        .photoImg:nth-child(3n)
+          margin 0
+        .Img
+          display inline-block
+          border-radius 8px
+          margin-right 45px
+          width 200px
+          height 200px
+          text-align center
+          line-height 200px
+          vertical-align bottom
+          position relative
+          .van-icon
+            position absolute
+            width 20px
+            height 20px
+            top -10px
+            right 0
+            color #FF3366
+        .img
+          display inline-block
+          border 2px solid #BDC1C6
+          border-radius 8px
+          margin-right 8px
+          width 200px
+          height 200px
+          text-align center
+          line-height 200px
+          vertical-align bottom
+          .upload_photos
+            width 36px
+            height 36px
+        span
+          vertical-align bottom
+          color #999
+        .img:nth-child(3n)
+          margin 0
+    .confirm
+      width 702px
+      height 88px
+      line-height 88px
+      font-size 30px
+      margin 60px auto 40px
+      text-align center
+      background-color #5A93FF
+      border-radius 8px
+      color #fff
+    .completion_time
+      padding 30px 24px
+      font-size 30px
+      background-color #fff
+</style>
+<style>
+/* 顶部表头 */
+.container-daily .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+</style>

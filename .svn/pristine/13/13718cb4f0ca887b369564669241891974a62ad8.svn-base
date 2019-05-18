@@ -1,0 +1,197 @@
+<template>
+    <div id="humanDetails">
+        <!-- 头部 -->
+        <van-nav-bar title="详情" left-arrow @click-left="onClickLeft" />
+        <div v-if='info'>
+            <!--简介-->
+            <div class="info-box">
+                <div class="img-box">
+                    <img src="">
+                </div>
+                <div class='info'>
+                    <p>
+                        <span>姓名：{{info.UserName}}</span>
+                        <span>性别：{{info.GenderName}}</span>
+                        <span>年龄：{{info.Age}}</span>
+                    </p>
+                    <p>身份证号：{{info.IdentityCard}}</p>
+                    <p>手机号：{{info.Mobile}}</p>
+                </div>
+            </div>
+            <!--详情-->
+            <div class="details">
+                <ul>
+                    <li>民族：{{info.Nation}}</li>
+                    <li>工种：{{info.WorkType}}</li>
+                    <li>门禁卡号：{{info.ACCard}}</li>
+                    <li>家庭住址：{{info.DetailAddress}}</li>
+                    <li>特种作业证证号：{{info.SpecialPermitNo}}</li>
+                    <li>操作类别：{{info.OperateMethod}}</li>
+                    <li>初次领证日期：{{info.FirstPermitDate}}</li>
+                    <li>使用日期：{{info.service_life}}</li>
+                    <li>所属公司：{{info.OrgID}}</li>
+                    <li>班组：{{info.GroupID}}</li>
+                    <li>工资卡号：{{info.WageCard}}</li>
+                    <li>劳动合同签署状态：{{info.SignStatus}}</li>
+                    <li>工资发放状态：{{info.salary_state}}</li>
+                    <li>本月考勤天数：</li>
+                    <li class='check'>
+                        <span>（正常）{{info.check_normal}}</span>
+                        <span>（迟到）{{info.check_chidao}}</span>
+                        <span>（早退）{{info.check_zaotui}}</span>
+                        <span>（缺勤）{{info.check_queqin}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import { GetMemberInfo } from '@/api/api'
+  export default {
+    name: 'humanDetails',
+    components: {},
+    props: {},
+    data() {
+      return {
+        info: null
+      }
+    },
+    created() {
+      this.init(this.$route.query.id.ID)
+    },
+    mounted() {
+    },
+    methods: {
+      async init (id) {
+        let res = await GetMemberInfo({projectid: localStorage.getItem('projectid'), Id: id})
+        if(res.StatusCode === 200){
+          this.info = res.Detiel[0]
+          console.log(this.info)
+        } else {
+          this.$message({
+            type: "error",
+            message: res.Message,
+            center: "true"
+          });
+        }
+      },
+      // 返回按钮
+      onClickLeft() {
+        this.$router.go(-1)
+      }
+    }
+  }
+</script>
+
+<style lang='stylus' scoped>
+    @import '../../../assets/stylus/variable'
+    #humanDetails {
+        background white
+        //头部样式
+        .van-nav-bar {
+            width: 100%;
+            height: 128px;
+            border-bottom: 1px solid #E5E5E5;
+
+            .van-nav-bar__title,
+            .van-nav-bar__left,
+            .van-nav-bar__right {
+                color: #000;
+                height: 87px;
+                padding-top: 41px;
+                line-height: 87px;
+                font-size $font-size-title;
+                z-index 10000;
+            }
+            .van-icon-arrow-left {
+                color: #000;
+                font-size $font-size-title;
+            }
+            .van-nav-bar__text {
+                color: #000;
+                font-size $font-size-title;
+            }
+            .nav_right {
+                img {
+                    width: 41px;
+                    height 35px;
+
+                }
+            }
+        }
+        .info-box{
+            width 100%
+            height 260px
+            background #5A92FF
+            padding 20px 24px
+            box-sizing border-box
+            display flex
+            .img-box {
+                width 160px
+                height 100%
+                img{
+                    width 100%
+                }
+            }
+            .info{
+                flex 1
+                padding 10px
+                display flex
+                flex-direction column
+                justify-content space-around
+                p{
+                    display flex
+                    justify-content space-between
+                    font-size:30px;
+                    color: white
+                }
+            }
+        }
+        .details{
+            ul{
+                li{
+                    height 88px
+                    line-height 88px
+                    padding 0 26px
+                    font-size:28px;
+                    color:rgba(51,51,51,1);
+                    position relative
+                }
+                li:not(:last-child)::after {
+                    content: ' ';
+                    position: absolute;
+                    pointer-events: none;
+                    box-sizing: border-box;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    -webkit-transform: scaleY(0.5);
+                    transform: scaleY(0.5);
+                    border-bottom: 2px solid #ebedf0;
+                }
+                .check{
+                    display flex
+                    justify-content space-between
+                    span{
+                        font-size 24px
+                    }
+                    span:nth-child(1){
+                        color:rgba(101,147,247,1);
+                    }
+                    span:nth-child(2){
+                        color:rgba(239,128,97,1);
+                    }
+                    span:nth-child(3){
+                        color:rgba(86,188,139,1);
+                    }
+                    span:nth-child(4){
+                        color:rgba(155,155,155,1);
+                    }
+                }
+            }
+        }
+    }
+</style>
+

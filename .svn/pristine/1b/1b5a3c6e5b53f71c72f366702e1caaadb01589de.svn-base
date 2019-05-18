@@ -1,0 +1,611 @@
+<!-- AI-report报表 -->
+<template>
+ <div class='container-ai-report'>
+    <!-- 返回键+AI报表 -->
+    <van-nav-bar title="AI报表" @click-left="goBack"   @click-right="showTable"   fixed :border="true" :z-index="100" >
+        <span class="el-icon-arrow-left fontsize" slot="left"></span>
+        <span class='van-nav-bar__right ai_report_nav_img' slot="right"  v-show="active==4 ">
+            <img src="../../assets/imgs/screen.png" alt="">
+        </span>
+    </van-nav-bar>
+    
+      <div v-show='showMeTable' class="ai_report_model">
+        <span class="ai_report_border"></span>
+        <div class='ai_report_list_time'>
+            <span @click='getbeginTime()'>{{beginTime}}</span>
+        </div>
+        <div class='ai_report_list_time'>
+            <span @click='lastTimeSelect()'>{{lastTime}}</span>
+        </div>
+
+        <van-collapse v-model="activeName" accordion>
+
+          <van-collapse-item name="1">
+              <div slot="title">资料名称 </div>
+              <van-radio-group v-model="selectName">
+                <van-cell-group>                
+                   <van-radio v-for='(item ,index) in textNameColl' v-bind:key='index' :name="item.value">{{item.name}}</van-radio> 
+                </van-cell-group>
+              </van-radio-group>
+          </van-collapse-item>
+          
+
+          <van-collapse-item name="2">
+              <div slot="title">内容配置 </div>
+              <van-radio-group v-model="contextBySelect">
+                <van-cell-group>                
+                   <van-radio v-for='(item ,index) in contextSelect' v-bind:key='index' :name="item.value">{{item.name}}</van-radio> 
+                </van-cell-group>
+              </van-radio-group>
+          </van-collapse-item>
+
+           <van-collapse-item name="3">
+              <div slot="title">楼栋 </div>
+              <van-radio-group v-model="glassBySelect">
+                <van-cell-group>                
+                   <van-radio v-for='(item ,index) in glassSelect' v-bind:key='index' :name="item.value">{{item.name}}</van-radio> 
+                </van-cell-group>
+              </van-radio-group>
+          </van-collapse-item>
+           <van-collapse-item name="4">
+              <div slot="title">楼层 </div>
+              <van-radio-group v-model="classBySelect">
+                <van-cell-group>                
+                   <van-radio v-for='(item ,index) in classSelect' v-bind:key='index' :name="item.value">{{item.name}}</van-radio> 
+                </van-cell-group>
+              </van-radio-group>
+          </van-collapse-item>
+        </van-collapse>
+
+        <div class='ai_report_order_foot'>
+            <div @click="resetForm">重置</div>
+            <div @click="searchForm">确定</div>
+        </div>
+
+
+
+
+      </div>
+
+
+
+
+
+      <van-tabs v-model="active" swipeable  :line-width='70' style="margin-top:44px;">
+          <van-tab title="施工日志" class='ai_report_tabs'>
+              <allTable></allTable> 
+          </van-tab>
+          <van-tab title="施工方案" class='ai_report_tabs'>
+              <allTable></allTable> 
+          </van-tab>
+          <van-tab title="技术对比" class='ai_report_tabs'>
+              <allTable></allTable> 
+          </van-tab>        
+          <van-tab title="三算对比" class='ai_report_tabs'>
+              <allTable></allTable> 
+          </van-tab>        
+          <van-tab title="自定义表单" class='ai_report_tabs_us'>
+            <!-- <div class='ai_report_selectAll'>
+                <el-row >
+                    <el-col :span='6' class="ai_report_right"> 
+                        资料类型
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan" @click='typeSelect()'>{{typeName}} <i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                    <el-col :span='6' class="ai_report_right">
+                          内容配置
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan" @click='textSelect()'>{{textName}} <i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                </el-row>
+                <el-row >
+                    <el-col :span='6' class="ai_report_right"> 
+                        楼栋
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan" @click='buildingSelect()'>{{buildingName}} <i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                    <el-col :span='6' class="ai_report_right">
+                        楼层
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan" @click='classSelect()'>{{lassName}} <i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                </el-row>
+                <el-row >
+                    <el-col :span='6' class="ai_report_right"> 
+                        开始时间
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan"  @click='getbeginTime()'>{{beginTime}}<i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                    <el-col :span='6' class="ai_report_right">
+                        结束时间
+                    </el-col>
+                    <el-col :span='6'>
+                        <span class="ai_report_selectSpan" @click='lastTimeSelect()'>{{lastTime}} <i class='ai_report_selectImg'></i> </span>
+                    </el-col>
+                </el-row>
+
+                <div class="ai_report_selectAll_foot">
+                
+                    <button class='ai_report_button' @click='searchAllTable()'>检索</button>
+                </div>
+
+            </div> -->
+            <div class='ai_report_selectTable'>
+                <el-table style="width:100%;font-size:28px;"  
+                  :data="allSelectTable" :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}">
+                    <el-table-column type="index" label="序号"  align="left" :index="indexMethod"></el-table-column>
+                    <el-table-column prop="name" label="资料名称"  align="center"></el-table-column>
+                    <el-table-column prop="isShow"  label="状态" align="center" > </el-table-column>
+                </el-table>
+            </div>
+
+
+          </van-tab>        
+      </van-tabs>
+
+
+  <!-- <van-actionsheet  v-model="show"  :actions="actions" item-height="60"   @select="onSelect" /> -->
+  <van-popup v-model="timeShow" position="bottom">
+            <van-datetime-picker 
+                v-model="currentDate" 
+                @confirm='closeTime'
+                @cancel='cancel'
+                :formatter="formatter"
+                type="date" 
+            />
+  </van-popup> 
+
+ </div>
+</template>
+<script type='textecmascript-6'>
+import allTable from './components/allTable'
+// import selectTime from './components/selectTime'
+
+export default {
+  components:{allTable},
+  data() {
+    return {
+      active:1,   //左右滑动在那个模块
+      activeName:'1', //导航右边图标---显示模板的手风琴
+      selectName:'',  //资料名称
+      contextBySelect:'',// 内容配置
+      glassBySelect:'',//楼栋
+      classBySelect:'',//楼层
+      //资料名称
+      textNameColl:[{ value: "1", name: "全部" },
+        { value: "2", name: "施工日志" },
+        { value: "3", name: "施工组织" },
+        { value: "4", name: "施工方案" },
+        { value: "5", name: "节点对比" },
+        { value: "6", name: "工作汇报" },
+        { value: "7", name: "日常巡检" },
+        { value: "8", name: "物资采购" }],
+      // 内容配置
+      contextSelect:[{ value: "1", name: "全部" },
+        { value: "2", name: "进度计划" },
+        { value: "3", name: "物资计划" },
+        { value: "4", name: "质量管理" },
+        { value: "5", name: "风险管理" },
+        { value: "6", name: "人力资源" }],
+      // 楼栋
+      glassSelect:[{ value: "1", name: "A1" },
+        { value: "2", name: "A2" },
+        { value: "3", name: "A3" },
+        { value: "4", name: "A4" },
+        { value: "5", name: "A5" }],
+      // 楼层 
+      classSelect:[ { value: "1", name: "1楼" },
+        { value: "2", name: "2楼" },
+        { value: "3", name: "3楼" },
+        { value: "4", name: "4楼" },
+        { value: "5", name: "5楼" }],
+
+
+
+
+      typeName:'请选择', //资料类型的文本
+      show: false, //上拉菜单是否显示---用于select
+      actions: [],
+      textName:'请选择', //内容配置的文本
+      buildingName:'请选择',//楼栋
+      lassName:'请选择',//楼层
+
+      selectNumber:1,//用于记录点击哪一个select,1为资料类型，2为内容配置，3为楼栋，4为楼层
+
+
+
+      currentDate: new Date(),
+      timeShow:false,//时间选择器--模态框显示
+      beginTime:'开始时间',//开始时间
+      lastTime:'结束时间',//结束时间
+      timenumber:1,//用于记录点击哪一个selectTime
+
+      allSelectTable:[{name:'施工日志20190801',isShow:'已生成'}],
+
+      showMeTable:false,//标题右侧的图标--显示列表
+
+    }
+  },
+  methods:{
+    //标题右侧的图标
+    showTable(){
+      console.log('点击右侧的小图标');
+      this.showMeTable=!this.showMeTable;
+    },
+    // onSelect(item) {
+    //   // 点击选项时默认不会关闭菜单，可以手动关闭
+    //   this.show = false; 
+    //   if(this.selectNumber == 1){
+    //       this.typeName=item.name;
+    //   }else if(this.selectNumber == 2){
+    //       this.textName=item.name;
+    //   }else if(this.selectNumber == 3){
+    //       this.buildingName=item.name;
+    //   }else if(this.selectNumber == 4){
+    //       this.lassName=item.name;
+    //   }
+    // },
+    //右侧图标----重置按钮
+    resetForm(){
+      this.selectName='';    //资料名称
+      this.contextBySelect='';  // 内容配置
+      this.glassBySelect=''; //楼栋
+      this.classBySelect='';  //楼层
+      this.beginTime='开始时间';
+      this.lastTime='结束时间';
+    },
+    //右侧图标----确定按钮
+    searchForm(){
+
+    },
+    //点击-资料类型-span
+    // typeSelect(){
+    //   this.show = true;
+    //   this.selectNumber=1;
+    //   this.actions=[{ value: "1", name: "全部" },
+    //     { value: "2", name: "施工日志" },
+    //     { value: "3", name: "施工组织" },
+    //     { value: "4", name: "施工方案" },
+    //     { value: "5", name: "节点对比" },
+    //     { value: "6", name: "工作汇报" },
+    //     { value: "7", name: "日常巡检" },
+    //     { value: "8", name: "物资采购" }];
+    // },
+    // //点击-内容配置-span
+    // textSelect(){
+    //   this.show = true;
+    //   this.selectNumber=2;
+    //   this.actions=[ { value: "1", name: "全部" },
+    //     { value: "2", name: "进度计划" },
+    //     { value: "3", name: "物资计划" },
+    //     { value: "4", name: "质量管理" },
+    //     { value: "5", name: "风险管理" },
+    //     { value: "6", name: "人力资源" }];
+    // },
+    // //点击楼栋
+    // buildingSelect(){
+    //   this.show = true;
+    //   this.selectNumber=3;
+    //   this.actions=[ { value: "1", name: "A1" },
+    //     { value: "2", name: "A2" },
+    //     { value: "3", name: "A3" },
+    //     { value: "4", name: "A4" },
+    //     { value: "5", name: "A5" }];
+    // },
+    // //点击楼层
+    // classSelect(){
+    //   this.show = true;
+    //   this.selectNumber=4;
+    //   this.actions=[ { value: "1", name: "1楼" },
+    //     { value: "2", name: "2楼" },
+    //     { value: "3", name: "3楼" },
+    //     { value: "4", name: "4楼" },
+    //     { value: "5", name: "5楼" }];
+    // },
+    //点击检索按钮
+    searchAllTable(){},
+    //点击开始时间
+    getbeginTime(){
+        this.timeShow=true;
+        this.timenumber=1
+    },
+    //点击结束时间
+    lastTimeSelect(){
+      this.timeShow=true;
+      this.timenumber=2
+    },
+    //时间上拉菜单上的--确定
+    closeTime(value){
+      if(this.timenumber=='1'){
+        this.beginTime=value.getFullYear() + '/' + (value.getMonth() + 1) + '/' + value.getDate() ;  
+      }else{
+        this.lastTime=value.getFullYear() + '/' + (value.getMonth() + 1) + '/' + value.getDate() ;  
+      }
+        this.timeShow=false;
+    },
+    //时间上拉菜单上的--取消
+    cancel(){
+      this.timeShow=false;
+    },
+    formatter(type, value) {
+      if (type === 'year') {
+          return `${value}年`;
+      } else if (type === 'month') {
+          return `${value}月`
+      } else if (type === 'day') {
+          return `${value}日`
+      } 
+      return value;
+    },
+    indexMethod(index){
+      return index+1;
+    },
+    //返回
+    goBack() {
+      this.$router.push({ path: "../index/index" });
+    }
+
+       
+
+   
+  },
+
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-ai-report
+  width 100%
+  height 100%
+  background-color #F6F8FA
+  box-sizing border-box
+  .ai_report_tabs
+    height 900px
+    width 100%
+    background-color #ffffff
+  .ai_report_tabs_us
+    height 900px
+    width 100%
+    background-color #F6F8FA
+  .ai_report_selectAll 
+    width 100%
+    height  410px
+    box-sizing border-box
+    padding 32px 26px
+    font-size 28px
+    background-color #ffffff
+  .ai_report_right
+    text-align right
+    padding-right 15px
+
+  // select的新写法
+  .ai_report_selectSpan
+    border 2px solid #649BFF
+    border-radius 6px 
+    width 100%
+    font-size 24px
+    display inline-block
+    padding-left 15px
+    box-sizing  border-box
+    height 58px
+  .ai_report_selectImg
+    display inline-block
+    width 0px
+    height 0px
+    border-left 6px solid transparent
+    border-right 6px solid transparent
+    border-top 10px solid #649BFF
+    float right
+    margin-right 15px
+    margin-top 20px
+  .ai_report_selectAll .el-row
+    width 100%
+    height 58px
+    line-height 58px
+    margin-bottom 20px
+  .ai_report_selectAll_foot
+    padding-top 30px
+    height 120px
+    width 100%
+    box-sizing border-box
+    text-align  center
+  .ai_report_button
+    background rgba(100,155,255,1)
+    box-shadow 0px 3px 7px 0px rgba(91,140,237,0.13)
+    border-radius 8px
+    font-size 28px
+    font-family PingFang-SC-Bold
+    font-weight bold
+    color rgba(255,255,255,1)
+    padding 17px  53px
+    border 0
+
+
+ 
+
+
+   
+
+</style>
+<style>
+/* 顶部表头 */
+.container-ai-report .van-nav-bar .van-nav-bar__title {
+    font-size: 36px;
+    font-weight: 400;
+}
+.container-ai-report  .van-nav-bar {
+    height: 88px;
+    line-height: 88px;
+ }
+ .container-ai-report  .ai_report_nav_img img{
+    height: 37px;
+    width: 41px;
+ }
+  .container-ai-report  .ai_report_nav_img {
+      float: right;
+      position: relative;
+      top :10px;
+  }
+  /* 右图标弹框样式 */
+  .ai_report_model{
+      position: fixed;
+      width:356px;
+      z-index: 200;
+      max-height: 940px;
+      right: 20px;
+      top:88px;
+      background-color:rgba(34,40,50,1);
+      border-radius: 8px;
+      padding:20px;
+      color:#ffffff;
+      font-size: 30px;
+      overflow: auto;
+  }
+  .ai_report_border{
+      width:0;
+      height:0;
+      border-width:0 16px 16px;
+      border-style:solid;
+      border-color:transparent transparent #222832;/*透明 透明  灰*/
+      position:relative;
+      display: inline-block;
+      top:-48px;
+      left:330px;
+  }
+  .ai_report_list{
+    width: 100%;
+    height: 88px;
+    line-height: 88px;
+    box-sizing: border-box;
+  }
+  .ai_report_list_border{
+     border-bottom:2px solid #ffffff;
+  }
+  .ai_report_list_time>span{
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: #EAEBED;
+      color:#333;
+      padding-left:8px;
+      border-radius: 6px;
+  }
+  .ai_report_list_time{
+    width: 100%;
+    height: 70px;
+    line-height: 70px;
+    box-sizing: border-box;
+    padding:5px 0;
+  }
+
+
+  .ai_report_model .van-cell{
+    background-color: #222832;
+    color:#ffffff;
+    line-height: 45px;
+    height: 60px;
+    border-top:2px solid #55595E; 
+    box-sizing: border-box;
+    font-size: 30px;
+  }
+  .ai_report_model .van-collapse-item__content{
+    background-color: #222832;
+    color:#ffffff;
+  }
+
+  .ai_report_model  .van-cell-group {
+     background-color: #222832;
+  }
+  .ai_report_model  .van-radio__label {
+    line-height: 70px;
+    font-size: 28px;
+    color:#ffffff;
+  }
+  .ai_report_model  .van-radio__icon .van-icon {
+    border:2px solid #ffffff;
+  }
+
+  .ai_report_model .van-hairline--top-bottom::after{
+    border:0;
+  }
+ .ai_report_model  .van-radio{
+   border-top:2px solid #55595E; 
+ }
+ .ai_report_order_foot{
+   height: 80px;
+   line-height: 40px;
+   width: 100%;
+   box-sizing: border-box;
+   border-top: 2px solid #ffffff;
+   border-bottom: 2px solid #ffffff;
+   padding:20px 0;
+ }
+  .ai_report_order_foot>div:first-child{
+    float: left;
+    width: 50%;
+    box-sizing: border-box;
+    border-right:2px  dashed #ffffff;
+    text-align: center;
+    cursor: pointer;
+  }
+  .ai_report_order_foot>div:last-child{
+    float: left;
+    width: 50%;
+    box-sizing: border-box;
+    text-align: center;
+    cursor: pointer;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 左右滑动标签页的样式更改 */
+.container-ai-report  .van-tabs__line{
+  background-color: #5B8DEE;
+} 
+.container-ai-report .van-tabs--line  .van-tabs__wrap{
+  height: 88px;
+}
+.container-ai-report .van-tabs--line  .van-tabs__nav{
+  height: 88px;
+}
+.container-ai-report  .van-ellipsis{
+  width: 100%;
+  color :#6B6B6B;
+  height: 88px;
+  font-size: 28px;
+  line-height: 88px;
+  /* font-weight:bold; */
+  font-family:PingFang-SC-Bold;
+}
+.container-ai-report .van-tabs__nav .van-tab--active .van-ellipsis{
+  color:rgba(91,140,238,1);
+}
+.container-ai-report .van-tabs--line{
+  padding-top:110px;
+}
+
+/* 表格样式更改 */
+.container-ai-report .el-table .cell{
+    height: 60px;
+    line-height: 60px;
+    font-size:24px
+}
+</style>

@@ -1,0 +1,128 @@
+.my-vant .van-nav-bar .van-nav-bar__title {
+    font-size: 36px;
+}
+
+.my-vant .van-field__right-icon .van-icon {
+    font-size: 30px
+}
+
+/* picker begin */
+.my-picker .van-picker__cancel,
+.my-picker .van-picker__confirm,
+.my-picker .van-picker__title,
+.my-picker .van-picker-column {
+    font-size: 30px
+}
+.my-picker .van-picker__toolbar {
+    height: 88px;
+    line-height: 88px;
+}
+/* picker end */
+
+/* toast begin */
+.my-toast.van-toast {
+    font-size: 30px;
+}
+.my-toast.van-toast--default{
+    width: 180px;
+    padding: 30px;
+}
+.my-toast.van-toast--text {
+    padding: 40px 40px
+}
+.my-toast.van-toast--default .van-toast__icon{
+    font-size: 96px;
+}
+/* toast end */
+
+/* radio-group begin */
+.my-radio {
+    background-color: #fff;
+    font-size: 30px;
+}
+.my-radio .my-radio-txt {
+    font-size: 30px;
+    font-weight: 400;
+}
+.my-radio .van-radio-group {
+    display: flex;
+    flex-direction: row;
+}
+.my-radio .van-radio-group .van-radio {
+    margin-right: 50px;
+}
+.my-radio .van-radio__icon{
+    height: 40px;
+    line-height: 40px;
+}
+.my-radio .van-radio__icon .van-icon{
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+}
+/* radio-group end */
+
+/* checkbox begin */
+.my-checkbox .van-checkbox__icon{
+    height: 40px;
+    line-height: 40px;
+}
+.my-checkbox .van-checkbox__icon .van-icon{
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+}
+/* checkbox end */
+
+/* botton begin */
+.my-button.van-button--normal{
+    padding: 0 30px;
+    font-size: 28px;
+}
+.my-button.van-button{
+    height: 88px;
+    line-height: 88px;
+    border-radius: 8px;
+    margin: 60px auto 40px;
+}
+/* botton end */
+
+/* Cell begin */
+.my-cell.van-cell{
+    font-size: 30px;
+    height: 88px;
+    line-height: 88px;
+    padding: 0 30px;
+}
+/* Cell end */
+
+/* field begin */
+.my-field.van-cell{
+    font-size: 30px;
+    height: 88px;
+    line-height: 88px;
+    padding: 0 30px;
+}
+.my-field .van-field__left-icon .van-icon, .my-field .van-field__right-icon .van-icon{
+    font-size: 40px;
+}
+/* field end */
+
+/* uploader begin */
+.photo-uploader{
+    width: 200px;
+    height: 200px;
+    border: 2px dashed rgba(189,193,198,1);
+    border-radius:8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.photo-uploader .van-icon{
+    font-size: 40px;
+}
+/* uploader end */
+.my-table.el-table thead{
+    font-size: 28px;
+    font-weight: 500;
+}

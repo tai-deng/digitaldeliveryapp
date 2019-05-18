@@ -1,0 +1,697 @@
+<template>
+  <div class="container-purchase">
+    <!-- purchase物资采购 -->
+    <van-nav-bar title="物资采购" @click-left="goBack" fixed :border="true" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="container_purchase_header" style="margin-top:44px;">
+      <div class="container_purchase_header_type">
+        <span>类型：</span>
+        <van-radio-group v-model="radioType">
+          <van-radio name="1">按进度</van-radio>
+          <van-radio name="2" v-if="listtype!==0 && listtype!==1 && listtype!==2">按模型构建</van-radio>
+          <!--  -->
+          <van-radio
+            name="3"
+            style="padding-left:20px;box-sizing:border-box"
+            v-if="listtype!==0 && listtype!==3"
+          >按清单</van-radio>
+        </van-radio-group>
+      </div>
+      <div v-if="radioType==1" class="container_purchase_header_check">
+        <span>审核类型：</span>
+        <van-radio-group v-model="radioCheck">
+          <van-radio name="1">审核</van-radio>
+          <van-radio name="2">无需审核</van-radio>
+        </van-radio-group>
+      </div>
+    </div>
+
+    <div class="container_purchase_body_select">
+      <!-- <div
+        v-if="radioType==1 || radioType==2"
+        class="container_purchase_list container_purchase_border"
+      >
+        <div>采购批次：</div>
+        <div @click="getThingNumber">{{getNumber}}</div>
+      </div>-->
+      <div
+        v-if="radioType==1 || radioType==2"
+        class="container_purchase_list_class container_purchase_border"
+      >
+        <div>楼栋：</div>
+        <div @click="getBuildingNumber">
+          {{options.buildname}}
+          <van-icon name="arrow" class="container_purchase_list_span"/>
+        </div>
+      </div>
+
+      <!-- <div class="container_purchase_list container_purchase_border">
+              <van-popup  v-if="radioType==1 || radioType==2" v-model="floor_show" position="bottom" :close-on-click-overlay="true" class="iPopup">
+              <van-picker
+                  show-toolbar
+                  title="楼栋"
+                  :columns="floor_columns"
+                  @cancel="onFloorCancel"
+                  @confirm="onFloorConfirm"/>
+              </van-popup>
+      </div>-->
+
+      <div v-if="radioType==1" class="container_purchase_list container_purchase_border">
+        <div>开始时间：</div>
+        <div @click="beginTimeSelect">
+          {{options.starttime}}
+          <van-icon name="arrow" class="container_purchase_list_span"/>
+        </div>
+      </div>
+      <div v-if="radioType==1" class="container_purchase_list">
+        <div>结束时间：</div>
+        <div @click="lastTimeSelect">
+          {{options.endtime}}
+          <van-icon name="arrow" class="container_purchase_list_span"/>
+        </div>
+      </div>
+
+      <!-- <div v-if="radioType==3" class="container_purchase_list container_purchase_border">
+        <div>项目编码：</div>
+        <div @click="projectSelect">
+          {{projectNumber}}
+          <van-icon name="arrow" class="container_purchase_list_span"/>
+        </div>
+      </div>-->
+      <div v-if="radioType==3" class="container_purchase_list container_purchase_border">
+        <div>项目名称：</div>
+        <div @click="projectNameSelect">
+          {{options.projectname}}
+          <van-icon name="arrow" class="container_purchase_list_span"/>
+        </div>
+      </div>
+      <div v-if="radioType==3" @click="addProjectName" class="container_purchase_add_list">
+        <img src="../../../assets/imgs/add_purchase.png" alt>添加项目名称
+      </div>
+    </div>
+    <!-- <div v-if="radioType==1" class="container_purchase_table_select">
+      <van-button
+        type="info"
+        style="width:120px;border-radius:10px;height:30px;"
+        round
+        @click="getTableDate(1)"
+      >确认</van-button>
+    </div>-->
+    <div class="container_purchase_hidden">
+      <el-table
+        style="width:100%;font-size:28px;box-sizing:border-box;"
+        :data="buyThingTable"
+        :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+      >
+        <el-table-column type="selection" width="40" align="center"></el-table-column>
+        <el-table-column prop="ResourceName" label="物资名称" align="center"></el-table-column>
+        <el-table-column prop="AdjustBOQ" label="施工预算量" align="center"></el-table-column>
+        <el-table-column prop="PurchaseNum" label="已采购" align="center"></el-table-column>
+        <el-table-column label="本次采购" align="center">
+          <template slot-scope="scope">
+            <input
+              type="number"
+              :placeholder="buyThingTable[scope.$index].Unit"
+              v-model="buyThingTable[scope.$index].ThisPurchaseNum"
+              name="num"
+              class="table_input"
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    <div class="purchase_addTime">
+      <div>需要时间：</div>
+      <div @click="witeTime">
+        {{wantTime}}
+        <van-icon name="arrow" class="container_purchase_list_span"/>
+      </div>
+    </div>
+    <div class="purchase_work">工作流程区域</div>
+    <div class="purchase_btn">
+      <button class="purchase_button" @click="searchAllTable()">确认提交</button>
+    </div>
+
+    <!-- 上拉菜单--每次点击事件-传入可以选择的值-然后再把值传入 -->
+    <van-actionsheet v-model="showSelect" :actions="actions" item-height="60" @select="onSelect"/>
+    <!-- 时间选择 -->
+    <van-popup v-model="timeShow" position="bottom">
+      <van-datetime-picker
+        v-model="currentDate"
+        @confirm="closeTime"
+        @cancel="cancel"
+        :formatter="formatter"
+        type="date"
+      />
+    </van-popup>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {
+  getListType,
+  getBuildList,
+  getPurchaseInfo
+} from "../../../assets/js/scopeManage.js";
+export default {
+  data() {
+    return {
+      radioType: "1", //类型
+      radioCheck: "1", //审核类型
+      getNumber: "请选择采购批次",
+      showNumber: false, //数字输入框
+      showSelect: false, //上拉菜单--显示隐藏
+      actions: [], //上拉菜单--数组集合
+      selectNumber: 1, //为1的时候是批次，为2的时候是楼栋
+      getBuilding: "请选择楼栋",
+      timeShow: false, //时间选择
+      timenumber: 1, //为1的时候是开始时间，为2的时候是结束时间，为3的时候为需要时间
+      beginTime: "请选择开始时间",
+      lastTime: "请选择结束时间",
+      buyThing: "请选择采购列表",
+      currentDate: new Date(),
+      wantTime: "请选择需求时间",
+      projectName: "项目名称",
+      projectNumber: "项目编码",
+
+      projectid: localStorage.getItem("projectid"),
+      listtype: 2, // 0为未导入 1为施工图清单 2.全费用清单 3.构件生成清单
+      labelText: "", // 资源名称 项目名称
+      BuildNameList: [], // 楼栋下拉
+
+      options: {
+        // 获取table 参数
+        buildname: "请选择楼栋",
+        starttime: "请选择开始时间",
+        endtime: "请选择结束时间",
+        projectid: "",
+        querytype: "",
+        listtype: "",
+        projectname: "",
+        elementids: "",
+        page: "", // 第几也页
+        rows: "" // 每页行数
+      },
+      subs: {},
+      buyThingTable: [], // table
+
+      schedule: {
+        list: [],
+        querytype: "1",
+        page: 1,
+        rows: 5
+      }, // 进度
+
+      mode: {
+        list: [],
+        querytype: "2",
+        page: 1,
+        rows: 5
+      }, // 模型
+
+      bill: {
+        list: [],
+        querytype: "3",
+        page: 1,
+        rows: 5
+      } // 清单
+    };
+  },
+  created() {
+    // 获取清单类型
+    getListType(this);
+    // 获取楼栋
+    getBuildList(this, res => {
+      this.BuildNameList = res.map(item => {
+        return {
+          name: item.text,
+          id: item.id
+        };
+      });
+    });
+  },
+  methods: {
+    // 获取筛选的表格内容
+    getTableDate() {
+      let radioType = this.radioType;
+      let flag = false;
+      if (radioType == 1) {
+        if (
+          this.options.buildname !== "请选择楼栋" &&
+          this.options.starttime !== "请选择开始时间" &&
+          this.options.endtime !== "请选择结束时间"
+        ) {
+          flag = true;
+        } else {
+          flag = false;
+        }
+      } else if (radioType == 2) {
+      } else if (radioType == 3) {
+      }
+
+      if (!flag) return;
+      this.buyThingTable = [];
+      let par = {};
+      par.projectid = this.projectid;
+      par.listtype = this.listtype;
+
+      if (radioType == 1) {
+        par.querytype = this.schedule.querytype;
+        par.buildname = this.options.buildname;
+        par.starttime = this.options.starttime;
+        par.endtime = this.options.endtime;
+        par.page = this.schedule.page;
+        par.rows = this.schedule.rows;
+      }
+      console.log(par, this.options, radioType);
+      getPurchaseInfo(this, par, res => {
+        if (radioType == 1) {
+          this.schedule.list = res.map(item => {
+            return Object.assign(item, {
+              ThisPurchaseNum: "",
+              Floor: this.options.buildname,
+              ProjectID: this.projectid,
+              isSel: false
+            });
+          });
+          this.buyThingTable = this.schedule.list;
+        } else if (radioType == 2) {
+          this.mode.list = res;
+          this.buyThingTable = this.mode.list;
+        } else if (radioType == 3) {
+          this.bill.list = res;
+          this.buyThingTable = this.bill.list;
+        }
+      });
+    },
+    //点击上拉菜单的确定的时候
+    onSelect(item) {
+      if (this.selectNumber == 1) {
+        this.getNumber = item.name; //采购批次
+      } else if (this.selectNumber == 2) {
+        this.options.buildname = item.name; //楼栋
+      } else if (this.selectNumber == 3) {
+        this.buyThing = item.name; //采购列表
+      } else if (this.selectNumber == 4) {
+        this.projectNumber = item.name; //项目编码
+      } else if (this.selectNumber == 5) {
+        this.projectName = item.name; //项目名称
+      }
+      this.showSelect = false;
+    },
+    //选择楼栋
+    getBuildingNumber() {
+      this.showSelect = true;
+      this.selectNumber = 2;
+      this.actions = this.BuildNameList;
+      console.log(this.actions);
+    },
+    beginTimeSelect() {
+      this.timeShow = true;
+      this.timenumber = 1;
+    },
+    lastTimeSelect() {
+      this.timeShow = true;
+      this.timenumber = 2;
+    },
+    //时间上拉菜单上的--确定
+    closeTime(value) {
+      if (this.timenumber == "1") {
+        this.options.starttime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      } else if (this.timenumber == "2") {
+        this.options.endtime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      } else if (this.timenumber == "3") {
+        this.wantTime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      }
+      this.timeShow = false;
+    },
+    //时间上拉菜单上的--取消
+    cancel() {
+      this.timeShow = false;
+    },
+    formatter(type, value) {
+      if (type === "year") {
+        return `${value}年`;
+      } else if (type === "month") {
+        return `${value}月`;
+      } else if (type === "day") {
+        return `${value}日`;
+      }
+      return value;
+    },
+    //需要时间
+    witeTime() {
+      this.timeShow = true;
+      this.timenumber = 3;
+    },
+    //项目编码选择
+    projectSelect() {
+      this.showSelect = true;
+      this.selectNumber = 4;
+      this.actions = [
+        { value: "1", name: "项目编码01" },
+        { value: "2", name: "项目编码02" },
+        { value: "3", name: "项目编码03" },
+        { value: "4", name: "项目编码04" },
+        { value: "5", name: "项目编码05" }
+      ];
+    },
+    //项目名称选择
+    projectNameSelect() {
+      this.showSelect = true;
+      this.selectNumber = 5;
+      this.actions = [
+        { value: "1", name: "项目名称01" },
+        { value: "2", name: "项目名称02" },
+        { value: "3", name: "项目名称03" }
+      ];
+    },
+    //点击添加--项目名称
+    addProjectName() {},
+    //点击确认提交按钮
+    searchAllTable() {
+      this.$router.push({ path: "./modules/purchaseTable" });
+    },
+    goBack() {
+      this.$router.push({ path: "/#" });
+    }
+  },
+  watch: {
+    // radioType
+    radioType(val) {
+      this.options = {
+        // 获取table 参数
+        buildname: "",
+        starttime: "",
+        endtime: "",
+        projectid: "",
+        querytype: "",
+        listtype: "",
+        projectname: "",
+        elementids: "",
+        page: "", // 第几也页
+        rows: "" // 每页行数
+      };
+    },
+    // table 参数
+    options: {
+      handler(val, old) {
+        this.getTableDate();
+      },
+      deep: true
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-purchase .van-actionsheet__item {
+  line-height: 80px !important;
+  height: 80px !important;
+}
+
+.container-purchase {
+  width: 100%;
+  height: 100%;
+  background-color: #F6F8FA;
+  font-size: 30px;
+
+  // 头部单选
+  .container_purchase_header {
+    width: 100%;
+  }
+
+  .container_purchase_header_type {
+    height: 88px;
+    line-height: 88px;
+    border-bottom: 2px solid #EDEDED;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .container_purchase_header_type>span {
+    display: inline-block;
+    float: left;
+    width: 15%;
+  }
+
+  .container_purchase_header_check {
+    height: 88px;
+    line-height: 88px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .container_purchase_header_check>span {
+    display: inline-block;
+    float: left;
+    width: 22%;
+  }
+
+  // 下拉菜单
+  .container_purchase_body_select {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .container_purchase_list {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .container_purchase_border {
+    border-bottom: 2px solid #EDEDED;
+  }
+
+  .container_purchase_list>div:first-child {
+    width: 24%;
+    display: inline-block;
+    float: left;
+  }
+
+  .container_purchase_list>div:last-child {
+    width: 76%;
+    display: inline-block;
+    float: left;
+    padding-left: 20px;
+    box-sizing: border-box;
+    color: #A7A7A7;
+  }
+
+  .container_purchase_list_class {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    padding: 0px 20px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+  }
+
+  .container_purchase_list_class>div:first-child {
+    width: 18%;
+    display: inline-block;
+    float: left;
+  }
+
+  .container_purchase_list_class>div:last-child {
+    width: 82%;
+    display: inline-block;
+    float: left;
+    color: #A7A7A7;
+  }
+
+  .container_purchase_list_span {
+    float: right;
+    margin-right: 20px;
+    line-height: 88px;
+  }
+
+  .container_purchase_table_select {
+    width: 70%;
+    box-sizing: border-box;
+    background-color: #F6F8FA;
+    padding: 0px 20px;
+    height: 90px;
+    line-height: 90px;
+  }
+
+  .container_purchase_table_select>div:first-child {
+    width: 40%;
+    display: inline-block;
+    float: left;
+  }
+
+  .container_purchase_table_select>div:last-child {
+    width: 50%;
+    display: inline-block;
+    float: left;
+    color: #A7A7A7;
+  }
+
+  .container_purchase_hidden {
+    width: 100%;
+    overflow: hidden;
+    height: 400px;
+    box-sizing: border-box;
+  }
+
+  .purchase_addTime {
+    margin-top: 20px;
+    width: 100%;
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    padding: 0px 20px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+  }
+
+  .purchase_addTime>div:first-child {
+    width: 24%;
+    display: inline-block;
+    float: left;
+  }
+
+  .purchase_addTime>div:last-child {
+    width: 76%;
+    display: inline-block;
+    float: left;
+    color: #A7A7A7;
+    // 工作流程
+  }
+
+  .purchase_work {
+    width: 100%;
+    padding: 0 20px;
+    height: 300px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+  }
+
+  .purchase_btn {
+    text-align: center;
+    padding: 0 20px;
+    padding-bottom: 40px;
+    background-color: #ffffff;
+    // 按钮
+  }
+
+  .purchase_button {
+    background: rgba(100, 155, 255, 1);
+    box-shadow: 0px 3px 7px 0px rgba(91, 140, 237, 0.13);
+    border-radius: 8px;
+    font-size: 28px;
+    width: 100%;
+    font-family: PingFang-SC-Bold;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+    padding: 17px 0px;
+    border: 0;
+  }
+
+  .container_purchase_add_list {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .container_purchase_add_list img {
+    height: 40px;
+    width: 40px;
+    margin-right: 20px;
+    position: relative;
+    top: 10px;
+  }
+}
+</style>
+<style>
+.container-purchase .van-picker__toolbar {
+  line-height: 60px !important;
+  height: 60px !important;
+}
+.container-purchase .el-table__empty-text {
+  font-size: 26px;
+}
+/* 顶部表头 */
+.container-purchase .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+.container-purchase .container_purchase_hidden .el-checkbox__inner {
+  /* background-color:rgba(238,238,238,1);
+  border-color: rgba(238,238,238,1);
+  border: 1px solid #409eff;
+  width: 22px;
+  height: 22px;
+  border-radius: 2px; */
+}
+.container-purchase .container_purchase_hidden .is-checked {
+  /* background-color: #409eff;
+  border-color: #409eff; */
+}
+.container-purchase .container_purchase_hidden .is-indeterminate {
+  /* background-color:rgba(238,238,238,1);
+  border-color: rgba(238,238,238,1);
+  border: 1px solid #409eff;
+  width: 22px;
+  height: 22px;
+  border-radius: 2px; */
+}
+.container-purchase .van-nav-bar {
+  height: 88px;
+  line-height: 88px;
+}
+/* 单选框--样式更改--改为行内块元素 */
+.container_purchase_header_type .van-radio-group .van-radio {
+  display: block;
+  float: left;
+  width: 33%;
+}
+.container_purchase_header_type .van-radio-group {
+  display: block;
+  float: left;
+  width: 85%;
+}
+.container_purchase_header_check .van-radio-group .van-radio {
+  display: block;
+  float: left;
+  width: 50%;
+}
+.container_purchase_header_check .van-radio-group {
+  display: block;
+  float: left;
+  width: 77%;
+}
+/* 表格样式更改 */
+.container-purchase .container_purchase_hidden .el-table .cell {
+  height: 60px;
+  line-height: 60px;
+  font-size: 24px;
+}
+.container-purchase .container_purchase_hidden .el-table .table_input {
+  border: 2px solid #5893ff;
+}
+</style>

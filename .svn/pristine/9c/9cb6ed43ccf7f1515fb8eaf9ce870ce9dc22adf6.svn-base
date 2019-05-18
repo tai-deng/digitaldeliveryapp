@@ -1,0 +1,88 @@
+// 接口
+import http from './request.js'
+
+// //登录接口
+export const Login = params => {
+  return http.fetchPost('Home/Login', params)
+}
+//获取当前登录用户详情接口
+export const GetLoginUserInfo = params => {
+  return http.fetchGet('User/GetLoginUserInfo', params)
+}
+
+
+/**
+ * 动态
+ */
+//建造动态（APP） 卡片列表
+export const GetConstruction = params => {
+  return http.fetchGet('SchedulePlan/GetConstruction', params)
+}
+//根据项目id和楼栋名称获取任务列表（APP）
+export const GetTaskList = params => {
+  return http.fetchGet('SchedulePlan/GetTaskList', params)
+}
+
+
+//获取所有人员信息
+// export const GetAllUserList = params => {
+//   return http.fetchGet('User/GetAllUserList', params)
+// }
+// //登录接口
+// export const Login = params => {
+//   return http.fetchPost('Home/Login', params)
+// }
+// // 根据（质量，安全，进度）动态ID删除动态表及动态照片表记录 ids
+// export const DeleteById = params => {
+//   return http.fetchPostGet('Dynamic/DeleteById', params)
+// }
+// //文件上传
+// export const UploadFiles = params => {
+//   return http.formDataUpLoad('File/UploadAndSaveMyFile', params)
+// }
+/**
+ * 范围管理 and 采购管理
+ */
+// 获取变更列表数据
+
+export const QueryChangList = params => {
+    return http.fetchPost('RangeManage/QueryChangList', params)
+}
+// 获取变更详情
+export const GetChangeInfo = params => {
+    return http.fetchGet('RangeManage/GetChangeInfo', params)
+}
+// 获取采购列表
+export const QueryPurchaseList = params => {
+    return http.fetchPost('RangeManage/QueryPurchaseList', params)
+}
+// 获取采购列表详情
+export const QueryPurchaseInfoItems = params => {
+    return http.fetchPost('RangeManage/QueryPurchaseInfoItems', params)
+}
+//获取楼栋列表
+export const GetBuilding = params => {
+    return http.fetchGet('Element/GetBuilding', params)
+}
+//根据楼栋获取模型的专业
+export const GetSpecialtybyBuilding = params => {
+    return http.fetchGet('/Element/GetSpecialtybyBuilding', params)
+}
+//根据楼栋获取模型的楼层
+export const GetFloorbyBuilding = params => {
+    return http.fetchGet('Element/GetFloorbyBuilding', params)
+}
+
+//个人信息 
+//修改个人信息
+export const MdfUser = params => {
+  return http.fetchPost('User/MdfUser', params)
+}
+//GetRoleList 查询所有的角色
+export const GetRoleList = params => {
+  return http.fetchGet('User/GetRoleList', params)
+}
+//修改角色UpdateRole
+export const UpdateRole = params => {
+  return http.fetchPostGet('User/UpdateRole', params)
+}

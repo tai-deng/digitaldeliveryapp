@@ -1,0 +1,138 @@
+<!-- 管控详情 -->
+<template>
+  <div class="container-control-details">
+    <!-- 头部 -->
+    <van-nav-bar title="管控详情" @click-left="goBack" fixed :border="false" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="wrapper">
+      <div class="wrapper_box" v-for="detailsList in detailsLists" :key="detailsList.index">
+        <div class="box_title">
+          <i class="title_index">{{detailsList.value}}</i>
+          <span class="programme">{{detailsList.title}}</span>
+        </div>
+        <div class="box_content">
+          <div class="content_row">
+            <span>{{detailsList.programme_one}}</span>
+            <img :src="detailsList.imgUrl" alt="">
+          </div>
+          <div class="content_row">
+            <span>{{detailsList.programme_two}}</span>
+            <img :src="detailsList.imgUrl" alt="">
+          </div>
+          <div class="content_row">
+            <span>{{detailsList.programme_three}}</span>
+            <img :src="detailsList.imgUrl" alt="">
+          </div>
+        </div>
+        <div class="box_footer">
+          <span class="footer_title">上传人:<span> {{detailsList.name}}</span></span>
+          <span class="footer_title">认证时间:<span> {{detailsList.time}}</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      detailsLists: [
+        {value: 1, title: '施工方案', programme_one: '承重墙浇筑施工方案', programme_two: '承重墙浇筑施工方案', programme_three: '承重墙浇筑施工方案', name: '李三思', time: '2018.01.01', imgUrl: require('../../../assets/imgs/control.png')},
+        {value: 2, title: '施工方案', programme_one: '承重墙浇筑施工方案', programme_two: '承重墙浇筑施工方案', programme_three: '承重墙浇筑施工方案', name: '李三思', time: '2018.01.01', imgUrl: require('../../../assets/imgs/control.png')},
+        {value: 3, title: '施工方案', programme_one: '承重墙浇筑施工方案', programme_two: '承重墙浇筑施工方案', programme_three: '承重墙浇筑施工方案', name: '李三思', time: '2018.01.01', imgUrl: require('../../../assets/imgs/control.png')},
+      ],//详情列表
+    };
+  },
+  methods: {
+    //返回
+    goBack() {
+      this.$router.push({ path: "/quality" });
+    },
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-control-details
+  width 100%
+  height 100%
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    .fontsize
+      font-size 42px
+      color #333
+      display inline-block
+      vertical-align middle
+  .wrapper
+    margin-top 88px
+    .wrapper_box
+      width 100%
+      height 482px
+      padding 0 24px
+      box-sizing border-box
+      background-color #fff
+      margin-bottom 20px
+      .box_title
+        height 80px
+        line-height 80px
+        .title_index
+          font-style normal
+          display inline-block
+          width 40px
+          height 40px
+          background-color #5A93FF
+          border-radius 50%
+          text-align center
+          font-size 30px
+          color #fff
+          vertical-align baseline
+          line-height 40px
+        .programme
+          margin-left 20px
+          font-size 36px
+          color #333
+      .box_content
+        margin-top 8px
+        .content_row
+          height 88px
+          line-height 88px
+          background-color #5A93FF
+          font-size 32px
+          border-radius 8px
+          color #fff
+          margin-top 20px
+          span
+            margin-left 40px
+            display inline-block
+            width 562px
+            height 40px
+            line-height 40px
+            vertical-align middle
+            border-right 2px dashed #C6DAFF
+          img
+            width 40px
+            height 40px
+            vertical-align middle
+            margin-left 28px
+        .content_row:first-child
+          margin 0
+      .box_footer
+        height 90px
+        line-height 90px
+        font-size 30px
+        display flex
+        .footer_title
+          color #333
+          flex 1
+          span 
+            color #666
+</style>
+<style>
+/* 顶部表头 */
+.container-control-details .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+</style>

@@ -1,0 +1,170 @@
+<!-- Risk风险管理 -->
+<template>
+  <div class="container-risk">
+    <!-- 头部 -->
+    <van-nav-bar title="风险管理" @click-left="goBack" @click-right="goProblemAnalysis" fixed :border="false" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+      <img src="../../../assets/imgs/speed_of_progress.png" class="speed_of_progress fontsize" slot="right">
+    </van-nav-bar>
+    <div class="wrapper">
+      <van-tabs v-model="active" swipeable animated sticky @change="handleIndex">
+        <van-tab v-for="item in titleArr" :title="item.label" :key="item.value">
+          <!-- 隔层 -->
+          <div class="interlayer"></div>
+          <!-- 表格 -->
+          <el-table :data="tableData" style="width: 100%" @row-click="clickRow">
+            <el-table-column type="index" align="center" label="序号" width="50"></el-table-column>
+            <el-table-column prop="theme" align="center" label="主题"></el-table-column>
+            <el-table-column prop="state" align="center" label="状态" width="50"></el-table-column>
+          </el-table>
+        </van-tab>
+      </van-tabs>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      active: this.$route.query.active, //tab默认位置
+      titleArr: [
+        { value: 0, label: "整改中（8条）" },
+        { value: 1, label: "待接收（8条）" },
+        { value: 2, label: "已整改（8条）" }
+      ],
+      tableData: [
+        {
+          theme: "XXXXXX主题",
+          state: "0/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "1/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "2/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "0/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "1/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "2/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "1/3"
+        },
+        {
+          theme: "XXXXXX主题",
+          state: "1/3"
+        },
+      ]
+    };
+  },
+  methods: {
+    //tab切换
+    handleIndex() {
+      console.log("active", this.active);
+    },
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    },
+    //跳转问题类型分析
+    goProblemAnalysis() {
+      this.$router.push({ path: "/ProblemAnalysis" });
+    },
+    //点击表格行
+    clickRow(row) {
+      console.log('row',row)
+      this.$router.push({ path: "/riskDetails", query: {active: this.active} });
+    },
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-risk
+  width 100%
+  height 100%
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    .fontsize
+      font-size 42px
+      color #333
+      display inline-block
+      vertical-align middle
+    .speed_of_progress
+      width 36px
+      height 36px
+  .wrapper
+    margin-top 88px
+    .interlayer
+      width 100%
+      height 26px
+      background-color #F6F8FA
+</style>
+<style>
+/* 顶部表头 */
+.container-risk .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+/*tab切换栏*/
+.container-risk .van-tab span {
+  font-size: 30px;
+  line-height: 80px;
+}
+.container-risk .van-tabs--line .van-tabs__wrap {
+  height: 80px;
+}
+.container-risk .van-tabs--line .van-tabs__wrap {
+  color: #666;
+  position: fixed;
+  top: 88px !important;
+}
+.container-risk .van-tabs--line .van-tabs__wrap .van-tabs__nav {
+  background-color: #fff;
+}
+.container-risk .van-tab--active {
+  color: #5a92ff;
+}
+/* tab下边线 */
+.container-risk .van-hairline--top-bottom::after {
+  border-width: 0 0 2px 0;
+}
+.container-risk .van-tabs--line {
+  padding-top: 80px;
+}
+.container-risk .van-tabs__line {
+  height: 4px;
+  bottom: 19px;
+  width: 120px;
+  bottom: 21px;
+  background-color: #5a92ff;
+}
+/*表格*/
+.container-risk .el-table {
+  color: #333;
+  font-size: 24px;
+}
+.container-risk .el-table thead tr th {
+  background-color: #5892ff;
+  color: #fff;
+}
+.container-risk .el-table .cell {
+  line-height: 76px;
+}
+.container-risk .el-table th div {
+  vertical-align: middle;
+  color: #fff;
+}
+</style>

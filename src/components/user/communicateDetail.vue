@@ -1,0 +1,594 @@
+<!-- communicate_detail 沟通管理 -->
+<template>
+ <div class='communicate_detail' >
+    <div class='wrapper' id="hum_wrapper">
+        <!-- 头部 -->
+        <div class="header">
+            <van-nav-bar
+                title="沟通管理"
+                left-arrow
+                @click-left="onClickLeft"
+            >
+            <!-- <div class="nav_right" slot="right"> <img src="../../assets/imgs/screen.png" alt="" /> </div> -->
+            </van-nav-bar>
+        </div>
+        <van-tabs v-model="active" :line-width="88" sticky color="#5A92FF" @change="handleIndex">
+          <van-tab v-for="item in titleArr" :key="item.value" :title="item.label">
+             <!-- 隔层 -->
+            <div class="interlayer"></div>
+
+            <div class="content">
+                  <!-- 沟通管理列表 -->
+              <div class="communicate_content">
+                  <el-table
+                      :header-row-style = "{'background-color': '#5A92FF', 'color': '#fff','height': '40px'}">
+                      <el-table-column
+                          prop="type"
+                          label="类型"
+                          width="80">
+                      </el-table-column>
+                      <el-table-column
+                          prop="themeContent"
+                          label="主题">
+                      </el-table-column>
+                      <el-table-column
+                          prop="createTime"
+                          label="发起时间"
+                          width="110">
+                      </el-table-column>
+                      <el-table-column
+                          prop="state"
+                          label="状态"
+                          width="60">
+                      </el-table-column>
+                  </el-table>
+              </div>             
+              <div :ref="`scrollBox${item.value}`" class="com_content_list">
+                  <el-table
+                  v-loading="ingLoading"
+                  :data="tableData"
+                  :show-header="false"
+                  @row-click="goToDetail">
+                      <el-table-column
+                          prop="ComType"
+                          label="类型"
+                          width="80">
+                      </el-table-column>
+                      <el-table-column
+                          prop="Subject"
+                          label="主题">
+                      </el-table-column>
+                      <el-table-column
+                          prop="dCreateTime"
+                          label="发起时间"
+                          width="110">
+                      </el-table-column>
+                          <el-table-column
+                          prop="Status"
+                          label="状态"
+                          width="60">
+                      </el-table-column>
+                  </el-table>
+                  <div v-loading="scrollLoader" class="loader" :style="{width: screenWidth+'px'}"></div>
+              </div>
+            </div>
+          </van-tab>
+        </van-tabs>
+    </div>
+ </div>
+</template>
+
+<script type='textecmascript-6'>
+import{GetCommunicateList,
+} from '@/api/api.js'
+export default {
+ data() {
+   return {
+    projectid: localStorage.getItem('projectid'),  
+    pageIndex: 1,
+    pageSize: 15,
+    sel_show: false,
+    active: 0,
+    dataHandle: [], // 进行中
+    dataOver: [],   //已完成
+    activeNames: ['0'],
+    titleArr: [
+      { value: 0, label: "整改中（0条）" },
+      { value: 1, label: "待接收（0条）" },
+      { value: 2, label: "已整改（0条）" }
+    ],
+    tableData: [],
+    // 人力物资列表数据
+    dataIng: [],
+    ingPageTotal: 0,
+    handlePageTotal: 0,
+    overPageTotal: 0,
+    statusList: ['', '0','1','2'], //状态为空字符串时查询全部， 0： 待接收 1： 处理中 2： 已处理
+    ingLoading: false,   //待接收状态
+    handleLoading: false, // 进行中状态
+    overLoading: false, // 已完成状态
+    scrollLoader: false, //上啦加载
+    screenWidth: 0  // 屏幕宽
+    }
+    },
+    created(){
+        this.screenWidth = window.screen.width;
+        this.getcommunicating(this.statusList[1])
+        this.getcommunicating(this.statusList[2])
+        this.getcommunicating(this.statusList[3])
+    },
+    updated(){
+      this.scrcllFun()
+    },
+    methods: {
+         // 返回按钮
+        onClickLeft() {
+        this.$router.go(-1)
+        },
+
+        // 重置函数 
+        resetFunc() {
+        console.log("chongzhi")
+        this.sel_show = false;
+        },
+        //确认函数 
+        recordCheck() {
+        console.log('queren')
+        this.sel_show = false;
+
+        },
+        // 表格合并单元格
+        arraySpanMethod({ columnIndex }) {
+        
+            if (columnIndex === 5) {
+                return [6, 1];
+            } else if (columnIndex === 4) {
+                return [6, 1];
+            }
+            },
+        // 跳转至详情
+        goToDetail(row, event, column) {
+        console.log(row)
+        console.log(event)
+        console.log(column)
+        this.$router.push({
+            path: "talking",
+            query: {
+            id: row.ID,
+            }
+        });
+        },
+        //切换栏函数
+        handleIndex( index, title){
+          console.log(index)
+          console.log(title)
+          if(index === 0){
+            this.tableData = this.dataHandle
+          } else if(index === 1){
+            this.tableData = this.dataIng
+          } else if(index === 2){
+            this.tableData = this.dataOver
+          }
+          
+        },
+        // 下拉加载更多
+        scrcllFun(){
+          let that = this
+          console.log(this.$refs[`scrollBox${this.active}`])
+          let scrollEl = this.$refs[`scrollBox${this.active}`][0]
+          scrollEl.onscroll = function(){
+            let scrollH = scrollEl.scrollHeight;
+            let scrollT = scrollEl.scrollTop
+            let screenH = window.screen.height;
+            let rel = scrollT /(scrollH + 141 - screenH )
+            console.log(scrollT)
+            if(rel>=1&& !that.scrollLoader){
+              that.scrollLoader = true
+              if(that.active === 0){
+                if(that.handlePageTotal > that.tableData.length){
+                  that.pageSize += that.pageSize
+                  that.CommunicateList(that.active)
+                }else {
+                  that.$toast({
+                    message: '没有更多数据了',
+                    duration: 800
+                  })
+                  that.scrollLoader = false
+                }
+                
+              } else if(that.active === 1){
+                if(that.ingPageTotal > that.tableData.length){
+                  that.pageSize += that.pageSize
+                  that.CommunicateList(that.active)
+                }else {
+                  that.$toast({
+                    message: '没有更多数据了',
+                    duration: 800
+                  })
+                  that.scrollLoader = false
+                }
+
+              } else if(that.active === 2){
+                if(that.overPageTotal > that.tableData.length){
+                  that.pageSize += that.pageSize
+                  that.CommunicateList(that.active)
+                }else {
+                  that.$toast({
+                    message: '没有更多数据了',
+                    duration: 800
+                  })
+                  that.scrollLoader = false
+                }
+
+              }
+            }
+          }
+          
+        },
+        /**
+         * 根据项目ID和状态获取沟通管理问题列表
+         */  
+        getcommunicating(state){
+        if(state === '0') {
+            this.ingLoading = true;
+        }else if(state === '1'){
+            this.handleLoading = true
+        } else if(state === '2'){
+            this.overLoading = true
+        } else if(state === ''){
+            this.allLoading = true
+        } else {
+            return false
+        }
+        this.CommunicateList(state)
+        },
+        /**
+         * api接口
+         */
+         // 根据项目ID获取沟通管理列表
+        async CommunicateList (state){
+        // this.load()
+        let data = {
+            projectId: this.projectid,
+            status: state,
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize
+        }
+
+        let res = await this.Request(GetCommunicateList(data))
+        console.log('沟通管理......')
+        console.log(res)
+        if(res.StatusCode === 200) {
+            let newData = []
+            let tData = {}
+            res.Detiel.forEach((item, i) => {
+                tData = Object.assign({index: `${i+1}`},item.Communicate)
+                tData.dCreateTime = item.Communicate.dCreateTime.substr(0, 10)
+                tData.Status = `${item.Communicate.DoNum}/${item.Communicate.TotalDoNum}`
+                newData.push(tData)
+            })
+        
+            if(data.status === '0'){ 
+            this.dataIng = newData
+            this.ingPageTotal = parseInt(res.Count)
+            this.titleArr[1].label = `待接收（${parseInt(res.Count)}条）`
+            this.ingLoading = false
+            console.log(this.dataIng)
+        
+            }else if(data.status === '1'){
+            this.dataHandle = newData
+            this.handlePageTotal = parseInt(res.Count)
+            this.titleArr[0].label = `整改中（${parseInt(res.Count)}条）`
+            if(this.active === 0){
+              this.tableData = this.dataHandle
+            }
+            this.handleLoading = false
+            console.log(this.dataHandle)
+            } else if( data.status === '2'){
+            this.dataOver = newData
+            this.overLoading = false 
+            this.overPageTotal = parseInt(res.Count)
+            this.titleArr[2].label = `已整改（${parseInt(res.Count)}条）`
+            console.log(this.dataOver)
+            }
+            this.scrollLoader = false
+            
+        }else {
+            this.$message({
+            type: 'error',
+            message: res.Message,
+            center: 'true'
+            })
+        }
+        // this.$toast.clear()
+        },
+    }
+    
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.communicate_detail
+  width 100%
+  height 100%
+</style>
+<style lang="stylus" rel='stylesheet/stylus'>
+@import '../../assets/stylus/variable'
+  #hum_wrapper {
+    // overflow-x: scroll;
+    width: 100%;
+    height: 100%;
+    //头部样式
+    .header {
+    // position: fixed;
+    // top: 0px;
+    // left: 0px;
+    width: 100%;
+    
+    z-index: 30;
+    }
+    .van-tabs--line {
+      padding-top: 88px;
+      height: calc(100% - 88px)
+      box-sizing: border-box;
+      .van-tabs__content {
+        height: 100%
+        overflow-x: auto;
+        .van-tab__pane {
+          height: 100%;
+        }
+      }
+    }
+    .interlayer {
+      width 100%
+      height 26px
+      background-color #F6F8FA
+    }
+   
+    .van-tabs__wrap {
+      height: 88px;
+      .van-ellipsis {
+        display: inline-block;
+        height: 88px;
+        line-height: 88px;
+        font-size:28px;
+        font-family:PingFang-SC-Bold;
+        font-weight:bold;
+        box-sizing: border-box;
+        color: #666;
+      }
+      .van-tab--active .van-ellipsis {
+        color: #5A92FF;
+      }
+    }
+    .content {
+        // position:fixed;
+        // top: 88px;
+        // left: 0px;
+        // margin-top: 88px;
+        width: 100%;
+        height: calc(100% - 26px)
+        box-sizing: border-box;
+        overflow-x: auto;
+    }
+    .van-nav-bar {
+      width: 100%;  
+      height: 88px;
+      border-bottom: 1px solid #E5E5E5;
+      box-sizing: border-box;
+
+      .van-nav-bar__title,
+      .van-nav-bar__left,
+      .van-nav-bar__right {
+        color: #000;
+        height: 88px;
+        // // padding-top: 41px;
+        line-height: 88px;
+        font-size $font-size-title;
+        box-sizing: border-box;
+        z-index 100;
+      }
+      .van-icon-arrow-left {
+        color: #000 ;
+        font-size $font-size-title;
+      }
+      .van-nav-bar__text {
+        color: #000;
+        font-size $font-size-title;
+      }
+      // .nav_right {
+      //   img {
+      //       width: 41px;
+      //     height 35px;
+          
+      //   }
+      // }
+    }
+    // 沟通管理列表样式 
+    .communicate_content {
+        // position: absolute;
+        // top: 0px;
+        // left: 0px;
+        width: 908px;
+        z-index: 30;
+        .el-table__body-wrapper {
+            display: none;
+        }  
+    }
+    
+    .com_content_list {
+      overflow-y:auto;
+      overflow-x: hidden;
+      // padding-top: 80px;
+      width: 908px;
+      height: calc(100% - 80px)
+      .loader {
+        position: fixed!important;
+        left: 0px;
+        bottom: 0px;
+        height: 88px;
+      }
+    }
+    .el-table {
+        .cell {
+            line-height 60px
+        }
+      .el-table__header-wrapper {
+        tr {
+          th {
+            background-color: #5A92FF
+            padding: 0px!important;
+            .cell {
+                height 100%;
+                line-height 60px;
+                text-align: center;
+                font-size: 30px;
+            }
+          }
+        }
+      }
+      .el-table__body-wrapper {
+        tr {
+            height 80px;
+          td {
+            height 80px;
+            font-size: 28px;
+            text-align: center;
+            color: #333;
+          }
+        }
+         //左上角图标样
+
+        tr:nth-child(2n+1):after {
+        // display: inline-block;
+        // content: '滞';
+        // font-size: 20px;
+        // padding 10px 0 0 10px;
+        // width: 60px
+        // height: 60px;
+        // color: #fff;
+        // background url('../../assets/imgs/mark.png') center center no-repeat;
+        // transform: translate(-1134%, 0)
+        }
+      }
+    }
+
+    // 筛选样式
+     .select_layer {
+      position: fixed;
+      top: 126px;
+      right: 24px;
+      width 352px;
+      box-sizing: border-box;
+      background:rgba(34,40,50,1)
+      border-radius:8px
+      padding 10px 20px;
+      z-index: 999
+        .van-hairline--top-bottom::after{
+          border: none;
+        }
+        .van-hairline--top::after {
+          border-top: none;
+          border-bottom: 1px solid #737577;
+        }
+        .van-collapse  {
+          max-height 909px;
+        }
+        .van-collapse-item{
+          .van-collapse-item__title--expanded::after {
+            visibility hidden
+          }
+        }
+        .van-collapse-item:first-child {
+          border-bottom: 1px solid #737577;
+        }
+        .van-collapse-item__title {
+          height 86px;
+          line-height 86px;
+          height 86px;
+         
+          background-color $color-bgc-2;
+         
+          .van-cell__title{
+            font-size 30px;
+            color #fff;
+            text-align left;         
+          }
+          .van-cell__right-icon {
+            color: transparent;
+          }
+        }
+        .icon_down {
+          position: absolute;
+          top: 45px;
+          right: 30px;
+          width: 16px;
+          height: 11px;
+
+        }
+        .van-collapse-item__content{
+          overflow auto;
+          max-height: 500px;
+          pdding: 0;
+          background-color $color-bgc-2
+          .van-cell{
+            width: 100%;
+            background-color $color-bgc-2
+            color: #fff;
+          }
+          ul {
+            li {
+              position relative;
+              height 86px;
+              line-height 86px;
+              height 86px;
+              padding-left:20px;
+              border-bottom: 1px solid #737577;
+
+            }
+            li:first-child {
+              background:rgba(34,40,50,0.9)
+
+            }
+          }
+         
+        }
+       .btn {
+            width: 100%
+            height 88px;
+            padding: 19px 0;
+            box-sizing border-box;
+            button {
+              width:49%;
+              height 50px;
+              line-height 50px;
+              background-color #222934;
+              color: #fff;
+              font-size: 30px;
+              text-align: center;
+              border: none;
+            }
+            .line {
+              display inline-block;
+              width: 0px;
+              height 50px
+              border-left: 2px dashed #fff;
+              vertical-align top;
+            }
+          }
+    
+    }
+    .select_layer:after {
+      position: absolute;
+      top: -0.379rem;
+      right: 0.186667rem;
+      content: '';
+      width: 0px;
+      height 0px;
+
+      border: 15px solid transparent;
+      border-bottom: 15px solid $color-bgc-2;
+      z-index: 9999
+    }
+  }
+</style>

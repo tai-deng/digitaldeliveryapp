@@ -1,0 +1,674 @@
+<template>
+  <div class="purchase_echart">
+    <van-nav-bar
+      title="采购管理"
+      @click-left="goBack"
+      @click-right="showTable"
+      fixed
+      :border="true"
+      :z-index="100"
+    >
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+      <span class="van-nav-bar__right ai_report_nav_img" slot="right">
+        <img src="../../../../assets/imgs/screen.png" alt>
+      </span>
+    </van-nav-bar>
+    <!-- 导航右侧图标--模态框 -->
+    <div v-show="showMeTable" class="purchase_echart_model">
+      <van-collapse v-model="activeName" accordion v-show="active==0">
+        <van-collapse-item name="1">
+          <div slot="title">楼栋</div>
+          <van-radio-group v-model="options.BuildName">
+            <van-cell-group>
+              <van-radio
+                v-for="(item ,index) in BuildNameList"
+                v-bind:key="index"
+                :name="item.value"
+              >{{item.name}}</van-radio>
+            </van-cell-group>
+          </van-radio-group>
+        </van-collapse-item>
+
+        <van-collapse-item name="2">
+          <div slot="title">专业</div>
+          <van-radio-group v-model="options.Specialty">
+            <van-cell-group>
+              <van-radio
+                v-for="(item ,index) in SpecialtyList"
+                v-bind:key="index"
+                :name="item.value"
+              >{{item.name}}</van-radio>
+            </van-cell-group>
+          </van-radio-group>
+        </van-collapse-item>
+
+        <van-collapse-item name="3">
+          <div slot="title">楼层</div>
+          <van-radio-group v-model="options.Floor">
+            <van-cell-group>
+              <van-radio
+                v-for="(item ,index) in FloorbyList"
+                v-bind:key="index"
+                :name="item.value"
+              >{{item.name}}</van-radio>
+            </van-cell-group>
+          </van-radio-group>
+        </van-collapse-item>
+
+        <van-collapse-item name="4">
+          <div slot="title">物资名称</div>
+          <van-radio-group v-model="options.CatagoryName">
+            <van-cell-group>
+              <van-radio
+                v-for="(item ,index) in ResorceNameList"
+                v-bind:key="index"
+                :name="item.value"
+              >{{item.name}}</van-radio>
+            </van-cell-group>
+          </van-radio-group>
+        </van-collapse-item>
+
+        <!-- <van-collapse-item name="5">
+              <div slot="title">已完成采购</div>
+              <van-radio-group v-model="buyingSelect">
+                <van-cell-group>                
+                   <van-radio v-for='(item ,index) in buyingThing' v-bind:key='index' :name="item.value">{{item.name}}</van-radio> 
+                </van-cell-group>
+              </van-radio-group>
+        </van-collapse-item>-->
+      </van-collapse>
+
+      <van-radio-group v-model="ResourceName" v-show="active==1">
+        <van-cell-group>
+          <van-radio
+            v-for="(item ,index) in ResourceList"
+            v-bind:key="index"
+            :name="item.value"
+          >{{item.name}}</van-radio>
+        </van-cell-group>
+      </van-radio-group>
+
+      <div class="ai_report_order_foot">
+        <div @click="resetFrom()">重置</div>
+        <div @click="searchFrom()">确定</div>
+      </div>
+    </div>
+    <!-- 关闭左右滑动--swipeable -->
+    <van-tabs v-model="active" :line-width="70">
+      <van-tab title="物资采购总览" class="purchase_echart_tabs">
+        <el-table
+          style="width:100%;"
+          :data="buyThingTable"
+          :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+        >
+          <el-table-column prop="ResourceName" label="物资名称" align="center"></el-table-column>
+          <el-table-column prop="AdjustBOQ" label="施工预算量" align="center"></el-table-column>
+          <el-table-column prop="InDate" label="采购总量" align="center"></el-table-column>
+          <el-table-column prop="StoreNum" label="库存" align="center"></el-table-column>
+          <el-table-column prop="OverNum" label="节超" align="center"></el-table-column>
+        </el-table>
+      </van-tab>
+      <van-tab title="物资统计分析" class="purchase_echart_tabs">
+        <div class="purchase_span">
+          <span>{{ResourceName}}</span>
+        </div>
+        <!-- 折线图组件 -->
+        <div class="purchaseImg">
+          <EchartImg :plan_table="table3"></EchartImg>
+        </div>
+
+        <div class="purchase_span">
+          <span>材料出入库情况</span>
+        </div>
+        <el-table
+          style="width:100%;font-size:28px;box-sizing:border-box;"
+          :summary-method="getSummaries"
+          show-summary
+          :span-method="objectSpanMethod"
+          :data="allTable"
+          :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+        >
+          <el-table-column label="入库" align="center">
+            <el-table-column prop="getTime" label="时间" align="center"></el-table-column>
+            <el-table-column prop="getNumber" label="数量" align="center"></el-table-column>
+          </el-table-column>
+          <el-table-column label="出库" align="center">
+            <el-table-column prop="outTime" label="时间" align="center"></el-table-column>
+            <el-table-column prop="outNumber" label="数量" align="center"></el-table-column>
+          </el-table-column>
+          <el-table-column prop="allhas" label="存库" align="center"></el-table-column>
+          <el-table-column prop="allout" label="节超" align="center"></el-table-column>
+        </el-table>
+      </van-tab>
+    </van-tabs>
+  </div>
+</template>
+<script>
+import EchartImg from "./EchartImg";
+import {
+  getBuildList,
+  getSpecialtyList,
+  getFloorList,
+  getResourceList,
+  getCollectList,
+  clearSel,
+  getResourceInfo,
+  getResourceName
+} from "../../../../assets/js/scopeManage.js";
+
+export default {
+  components: { EchartImg },
+  data() {
+    return {
+      BuildNameList: [],
+      SpecialtyList: [],
+      FloorbyList: [],
+      ResorceNameList: [],
+      options: {
+        BuildName: "",
+        Specialty: "",
+        Floor: "",
+        CatagoryName: ""
+      },
+      buyThingTable: [],
+      ResourceName: "",
+      ResourceList: [],
+
+      active: 0, //左右滑块
+      showMeTable: false, //导航右边图标---显示查询条件
+      activeName: "1", //导航右边图标---显示模板的手风琴
+      selectName: "", //专业
+      contextBySelect: "", // 物资类别
+      glassBySelect: "", //楼栋
+      classBySelect: "", //楼层
+      buyingSelect: "", //已完成采购
+      //专业
+      textNameColl: [
+        { value: "1", name: "全部" },
+        { value: "2", name: "建筑专业" },
+        { value: "3", name: "结构专业" },
+        { value: "4", name: "暖通系统" },
+        { value: "5", name: "通风系统" },
+        { value: "6", name: "弱电系统" },
+        { value: "7", name: "强电系统" }
+      ],
+      // 物资类别
+      contextSelect: [
+        { value: "1", name: "全部" },
+        { value: "2", name: "门" },
+        { value: "3", name: "混泥土" },
+        { value: "4", name: "水泥" },
+        { value: "5", name: "钢筋" }
+      ],
+      // 楼栋
+      glassSelect: [
+        { value: "1", name: "A1" },
+        { value: "2", name: "A2" },
+        { value: "3", name: "A3" },
+        { value: "4", name: "A4" },
+        { value: "5", name: "A5" }
+      ],
+      // 楼层
+      classSelect: [
+        { value: "1", name: "1楼" },
+        { value: "2", name: "2楼" },
+        { value: "3", name: "3楼" },
+        { value: "4", name: "4楼" },
+        { value: "5", name: "5楼" }
+      ],
+      //已完成采购
+      buyingThing: [
+        { value: "1", name: "采购中" },
+        { value: "2", name: "未采购" }
+      ],
+      //物资种类--Echart图
+      allThing: "",
+      allThingList: [
+        { value: "1", name: "c20混凝土" },
+        { value: "2", name: "门" },
+        { value: "3", name: "c30混凝土" }
+      ],
+
+      //echarts数据格式
+      table3: {
+        title: "总产值分析", //主标题
+        subtext: "单位（万元）", //副标题
+        legend: ["出库量", "采购量"], //折线名字
+        xData: [
+          "1月",
+          "2月",
+          "3月",
+          "4月",
+          "5月",
+          "6月",
+          "7月",
+          "8月",
+          "9月",
+          "10月",
+          "11月",
+          "12月"
+        ], //x轴数据
+        yData: [
+          {
+            name: "出库量",
+            type: "line",
+            color: "#2C77CE",
+            data: [10, 16, 15, 83, 92, 63, 40, 35, 22, 80, 92, 63]
+          },
+          {
+            name: "采购量",
+            type: "line",
+            color: "#499341",
+            data: [1, 18, 24, 53, 35, 22, 80, 35, 22, 80, 15, 18]
+          }
+        ]
+      },
+      //出入库材料表格
+      allTable: [
+        {
+          getTime: "2019/01/02",
+          outTime: "2019/01/06",
+          getNumber: "66666",
+          outNumber: "33333",
+          allhas: "300",
+          allout: "520"
+        },
+        {
+          getTime: "2019/01/02",
+          outTime: "2019/01/06",
+          getNumber: "66666",
+          outNumber: "33333",
+          allhas: "300",
+          allout: "520"
+        },
+        {
+          getTime: "2019/01/02",
+          outTime: "2019/01/06",
+          getNumber: "66666",
+          outNumber: "33333",
+          allhas: "300",
+          allout: "520"
+        },
+        {
+          getTime: "2019/01/02",
+          outTime: "2019/01/06",
+          getNumber: "66666",
+          outNumber: "33333",
+          allhas: "300",
+          allout: "520"
+        }
+      ]
+    };
+  },
+  created() {
+    this.getDataList();
+    getBuildList(this, res => {
+      this.BuildNameList = res.map(item => {
+        return {
+          name: item.text,
+          value: item.id
+        };
+      });
+      this.BuildNameList.splice(0, 1);
+    });
+    getResourceName(this, res => {
+      this.ResourceList = res.map(item => {
+        return {
+          name: item,
+          value: item
+        };
+      });
+    });
+  },
+  watch: {
+    "options.BuildName"(val) {
+      if (val != "") {
+        clearSel(this, 1);
+        getSpecialtyList(this, res => {
+          this.SpecialtyList = res.map(item => {
+            return {
+              name: item.text,
+              value: item.id
+            };
+          });
+          this.SpecialtyList.splice(0, 1);
+        });
+      }
+    },
+    "options.Specialty"(val) {
+      if (val != "") {
+        clearSel(this, 2);
+        getFloorList(this, res => {
+          this.FloorbyList = res.map(item => {
+            return {
+              name: item.text,
+              value: item.id
+            };
+          });
+          this.FloorbyList.splice(0, 1);
+        });
+      }
+    },
+    "options.Floor"(val) {
+      if (val != "") {
+        clearSel(this, 3);
+        getResourceList(this, res => {
+          this.ResorceNameList = res.map(item => {
+            return {
+              name: item.text,
+              value: item.id
+            };
+          });
+        });
+      }
+    }
+  },
+  methods: {
+    // 获取数据
+    getDataList() {
+      let par = {};
+      if (this.options.BuildName !== "全部") {
+        par = this.options;
+      } else {
+        par.ProjectID = projectid;
+        par.BuildName = "";
+        par.Specialty = this.options.Specialty;
+        par.Floor = this.options.Floor;
+        par.CatagoryName = this.options.CatagoryName;
+        par.Name = this.options.Name;
+      }
+      getCollectList(this, par, res => {
+        this.showMeTable = false;
+        this.total = Number(res.Count);
+        this.buyThingTable = res;
+      });
+    },
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    },
+    //右侧导航栏的图标点击
+    showTable() {
+      this.showMeTable = !this.showMeTable;
+    },
+    //根据页面的滑动--清掉某些值(模态框)
+    resetFrom() {
+      if (this.active == 0) {
+        this.options = {
+          BuildName: "",
+          Specialty: "",
+          Floor: "",
+          CatagoryName: ""
+        };
+      } else {
+        this.allThing = ""; //物资种类--Echart图
+        this.ResourceName = "";
+      }
+    },
+    //根据页面的滑动--模态框--点击确定查询
+    searchFrom() {
+      if (this.active) {
+        this.getYearInfo();
+      } else {
+        this.buyThingTable = [];
+        this.getDataList();
+      }
+    },
+    //材料出入库表格---合并项
+    objectSpanMethod({ rowIndex, columnIndex }) {
+      if (columnIndex === 4 || columnIndex === 5) {
+        if (rowIndex == 0) {
+          return {
+            rowspan: this.allTable.length + 2,
+            colspan: 1
+          };
+        } else {
+          return {
+            rowspan: 0,
+            colspan: 0
+          };
+        }
+      }
+    },
+    //材料出入库表格---总计合并
+    getSummaries(param) {
+      const { columns, data } = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 || index === 2) {
+          sums[index] = "总量";
+          return;
+        } else if (index === 4 || index === 5) {
+          sums[index] = "";
+          return;
+        }
+        const values = data.map(item => Number(item[column.property]));
+        if (!values.every(value => isNaN(value))) {
+          sums[index] = values.reduce((prev, curr) => {
+            const value = Number(curr);
+            if (!isNaN(value)) {
+              return prev + curr;
+            } else {
+              return prev;
+            }
+          }, 0);
+        } else {
+          sums[index] = "";
+        }
+      });
+      return sums;
+    },
+    // 获取年度物资采购信息
+    getYearInfo() {
+      getResourceInfo(this, res => {
+        this.showMeTable = false;
+        console.log(res);
+      });
+    }
+  }
+};
+</script>
+<style>
+.purchase_echart {
+  width: 100%;
+  height: 100%;
+  padding-top: 88px;
+  box-sizing: border-box;
+}
+/* 表格样式更改 */
+
+.purchase_echart .el-table th > .cell,
+.container-procurement-list .temporary thead th {
+  font-size: 28px;
+}
+.purchase_echart .purchase_echart_tabs {
+  height: 60px;
+  line-height: 60px;
+  font-size: 30px;
+}
+/* 顶部表头 */
+.purchase_echart .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+.purchase_echart .van-nav-bar {
+  height: 88px;
+  line-height: 88px;
+}
+.purchase_echart .ai_report_nav_img img {
+  height: 37px;
+  width: 41px;
+}
+.purchase_echart .ai_report_nav_img {
+  float: right;
+  position: relative;
+  top: 10px;
+}
+.purchase_echart_tabs {
+  height: 1130px;
+  width: 100%;
+  background-color: #ffffff;
+}
+
+/* 左右滑动标签页的样式更改 */
+.purchase_echart .van-tabs__line {
+  background-color: #5b8dee;
+}
+.purchase_echart .van-tabs--line .van-tabs__wrap {
+  height: 88px;
+}
+.purchase_echart .van-tabs--line .van-tabs__nav {
+  height: 88px;
+}
+.purchase_echart .van-ellipsis {
+  width: 100%;
+  color: #6b6b6b;
+  height: 88px;
+  font-size: 28px;
+  line-height: 88px;
+  /* font-weight:bold; */
+  font-family: PingFang-SC-Bold;
+}
+.purchase_echart .van-tabs__nav .van-tab--active .van-ellipsis {
+  color: rgba(91, 140, 238, 1);
+}
+.purchase_echart .van-tabs--line {
+  padding-top: 110px;
+}
+/* 表格样式更改 */
+.purchase_echart .el-table .cell {
+  height: 60px;
+  line-height: 60px;
+  font-size: 24px;
+}
+.purchase_echart .el-table .table_input {
+  border: 2px solid #5893ff;
+}
+
+/* 右图标弹框样式 */
+.purchase_echart_model {
+  position: fixed;
+  width: 356px;
+  z-index: 200;
+  max-height: 940px;
+  right: 20px;
+  top: 88px;
+  background-color: rgba(34, 40, 50, 1);
+  border-radius: 8px;
+  padding: 20px;
+  color: #ffffff;
+  font-size: 30px;
+  overflow: auto;
+}
+.purchase_echart_model .ai_report_border {
+  width: 0;
+  height: 0;
+  border-width: 0 16px 16px;
+  border-style: solid;
+  border-color: transparent transparent #222832; /*透明 透明  灰*/
+  position: relative;
+  display: inline-block;
+  top: -48px;
+  left: 330px;
+}
+.purchase_echart_model .ai_report_list {
+  width: 100%;
+  height: 88px;
+  line-height: 88px;
+  box-sizing: border-box;
+}
+.purchase_echart_model .ai_report_list_border {
+  border-bottom: 2px solid #ffffff;
+}
+.purchase_echart_model .ai_report_list_time > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #eaebed;
+  color: #333;
+  padding-left: 8px;
+  border-radius: 6px;
+}
+.purchase_echart_model .ai_report_list_time {
+  width: 100%;
+  height: 70px;
+  line-height: 70px;
+  box-sizing: border-box;
+  padding: 5px 0;
+}
+
+.purchase_echart_model .van-cell {
+  background-color: #222832;
+  color: #ffffff;
+  line-height: 45px;
+  height: 60px;
+  border-top: 2px solid #55595e;
+  box-sizing: border-box;
+  font-size: 30px;
+}
+.purchase_echart_model .van-collapse-item__content {
+  background-color: #222832;
+  color: #ffffff;
+}
+
+.purchase_echart_model .van-cell-group {
+  background-color: #222832;
+}
+.purchase_echart_model .van-radio__label {
+  line-height: 70px;
+  font-size: 28px;
+  color: #ffffff;
+}
+.purchase_echart_model .van-radio__icon .van-icon {
+  border: 2px solid #ffffff;
+}
+
+.purchase_echart_model .van-hairline--top-bottom::after {
+  border: 0;
+}
+.purchase_echart_model .van-radio {
+  border-top: 2px solid #55595e;
+}
+.purchase_echart_model .ai_report_order_foot {
+  height: 80px;
+  line-height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  padding: 20px 0;
+}
+.purchase_echart_model .ai_report_order_foot > div:first-child {
+  float: left;
+  width: 50%;
+  box-sizing: border-box;
+  border-right: 2px dashed #ffffff;
+  text-align: center;
+  cursor: pointer;
+}
+.purchase_echart_model .ai_report_order_foot > div:last-child {
+  float: left;
+  width: 50%;
+  box-sizing: border-box;
+  text-align: center;
+  cursor: pointer;
+}
+.purchaseImg {
+  width: 100%;
+  height: 500px;
+  box-sizing: border-box;
+}
+
+.purchase_span {
+  height: 80px;
+  line-height: 80px;
+  font-size: 30px;
+
+  padding: 15px 0;
+}
+.purchase_span span {
+  margin-left: 20px;
+  display: inline;
+  border-left: 8px solid #5a92ff;
+  padding-left: 20px;
+}
+</style>

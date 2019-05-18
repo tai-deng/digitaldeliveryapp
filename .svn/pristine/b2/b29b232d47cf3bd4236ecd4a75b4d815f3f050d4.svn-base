@@ -1,0 +1,699 @@
+<!-- daily日常巡检 -->
+<template>
+  <div class="container-daily my-vant">
+    <!-- 头部 -->
+    <van-nav-bar title="日常巡检" @click-left="goBack" fixed :border="false" :z-index="100" class="my-nav-bar">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="Interlayer"></div>
+    <div class="wrapper">
+      <div class="details_box">
+        <div class="details">
+          <span>
+            主题：
+            <input type="text" placeholder="请输入主题文字" v-model="form.theme">
+          </span>
+        </div>
+        <div class="details" @click="isShowType">
+          <span>
+            问题类型：
+            <input type="text" placeholder="请选择问题类型" v-model="form.qt">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <!-- <van-cell-group class="details" @click="choseCategory">
+          <van-field
+            placeholder="请选择风险类型"
+            label="风险类型："
+            label-width="80"
+            right-icon="arrow"
+            disabled
+            :value="categoryVal"
+          />
+        </van-cell-group> -->
+        <van-row class="details my-radio">
+          <van-col span="6" class="my-radio-txt">风险类型：</van-col>
+          <van-col span="18">
+            <van-radio-group v-model="form.category">
+              <van-radio :name="1">质量</van-radio>
+              <van-radio :name="2">安全</van-radio>
+            </van-radio-group>
+          </van-col>
+        </van-row>
+        <van-cell-group class="details" @click="choseBuilding">
+          <van-field
+            placeholder="请选择楼栋"
+            label="楼栋："
+            right-icon="arrow"
+            disabled
+            :value="form.building"
+            class="my-field"
+          />
+        </van-cell-group>
+        <van-cell-group class="details" @click="choseFloor">
+          <van-field
+            placeholder="请选择楼层"
+            label="楼层："
+            right-icon="arrow"
+            disabled
+            :value="form.floor"
+            class="my-field"
+          />
+        </van-cell-group>
+        <div class="details">
+          <span>
+            发起人：
+            <span>{{form.initiator}}</span>
+          </span>
+          <!-- <van-cell-group>
+            <van-field v-model="form.initiator" label="发起人：" />
+          </van-cell-group> -->
+        </div>
+        <div class="details" @click="isShowInitiationTime">
+          <span>
+            发起时间：
+            <input type="text" placeholder="请选择发起时间" v-model="form.startTime">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <div class="">
+          <van-cell-group>
+            <van-field
+              v-model="form.describe"
+              label="描述："
+              type="textarea"
+              placeholder="请输入描述"
+              rows="2"
+              autosize
+            />
+          </van-cell-group>
+        </div>
+      </div>
+      <div class="picture upload">
+        <p class="photo">上传照片</p>
+        <div class="photo_img">
+          <!-- <img class="photoImg" src="../../../assets/imgs/storied_building.png" alt> -->
+          <div class="Img">
+            <img class="photoImg" src="../../../assets/imgs/storied_building.png" alt>
+            <van-icon name="clear"/>
+          </div>
+          <div class="img">
+            <img class="upload_photos" src="../../../assets/imgs/upload_photos.png" alt>
+          </div>
+          <span>最多上传3张</span>
+        </div>
+      </div>
+      <div class="details_box">
+        <div class="details" @click="openReceiver">
+          <span>
+            接收人：
+            <input type="text" placeholder="请选择接收人" v-model="personVal">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+        <div class="details details_border" @click="isShowEndTime">
+          <span>
+            整改截止时间：
+            <input type="text" placeholder="请选择整改截止时间" v-model="form.completionTime">
+            <span class="el-icon-arrow-right"></span>
+          </span>
+        </div>
+      </div>
+      <!-- <div class="confirm completion" @click="complete">确认</div> -->
+      <van-button size="large" type="info" @click="complete" :loading="loadingBtm" block class="confirm">确认</van-button>
+    </div>
+    <!-- 问题类型 -->
+    <van-actionsheet v-model="show_type">
+      <van-picker 
+        show-toolbar 
+        :columns="columnsType" 
+        :loading="loadingType"
+        :item-height="88"
+        @confirm="onConfirmType" 
+        @cancel="onCancel"
+        class="my-picker"
+        />
+    </van-actionsheet>
+    <!-- 风险类型 -->
+    <van-actionsheet v-model="show_category">
+      <van-picker 
+        show-toolbar 
+        :columns="columnsCategory" 
+        value-key="label"
+        @confirm="onConfirmCategory" 
+        @cancel="onCancel"/>
+    </van-actionsheet>
+    <!-- 发起时间 -->
+    <van-actionsheet v-model="show_initiation_time">
+      <van-datetime-picker
+        type="date"
+        :min-date="minDate"
+        :item-height="88"
+        @confirm="onConfirmInitiation"
+        @cancel="onCancel"
+        class="my-picker"
+      />
+    </van-actionsheet>
+    <!-- 整改截止时间 -->
+    <van-actionsheet v-model="show_end_time">
+      <van-datetime-picker
+        type="date"
+        :min-date="minDate"
+        :item-height="88"
+        @confirm="onConfirmEnd"
+        @cancel="onCancel"
+        class="my-picker"
+      />
+    </van-actionsheet>
+    <!-- 接收人 begin -->
+    <van-actionsheet v-model="show_receiver" :close-on-click-overlay="true" class="receiver">
+      <van-checkbox-group v-model="personVal">
+        <van-cell-group>
+          <van-cell
+            v-for="(item, index) in receiver"
+            clickable
+            :key="item.id"
+            :title="item.text"
+            @click="toggleCheckbox(index, item.id)"
+            class="my-cell"
+          >
+            <van-checkbox :name="item.text" ref="checkboxes" class="my-checkbox" shape="square" />
+          </van-cell>
+        </van-cell-group>
+      </van-checkbox-group>
+    </van-actionsheet>
+    <!-- <van-popup v-model="show_receiver" position="bottom">
+      <van-checkbox-group v-model="form.person">
+        <van-cell-group>
+          <van-cell
+            v-for="(item, index) in receiver"
+            clickable
+            :key="item.id"
+            :title="item.text"
+            @click="toggleCheckbox(index)"
+          >
+            <van-checkbox :name="item.text" ref="checkboxes" />
+          </van-cell>
+        </van-cell-group>
+      </van-checkbox-group>
+    </van-popup> -->
+    <!-- 接收人 end -->
+    <van-actionsheet v-model="isSelect" :actions="actions" @select="onSelect"/>
+    <van-popup v-model="popupShow" position="bottom">
+      <van-picker
+        show-toolbar
+        :title="pickerTitle"
+        :columns="columns"
+        :loading="pickerLoading"
+        :value-key="value_key"
+        :item-height="88"
+        @cancel="popupShow = false"
+        @confirm="onConfirm"
+        class="my-picker"
+      />
+    </van-popup>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {
+  GetDictInfoList,
+  GetAllUserList,
+  GetBuilding,
+  GetFloorbyBuilding,
+  PublishRisk
+} from "@/api/api.js";
+export default {
+  data() {
+    return {
+      popupShow: false,  //弹出层是否显示
+      pickerLoading: false,  //是否显示加载状态
+      pickerTitle: "",  //顶部栏标题
+      value_key: "",  //选项对象中，文字对应的 key
+      columns: [],  //对象数组，配置每一列显示的数据
+      loadingBtm: false,  //提交按钮是否显示为加载状态
+
+      ProjectID: localStorage.getItem('projectid'), //项目ID
+      userID: localStorage.getItem("userId"), //用户ID
+      isSelect: false,
+      actions: [],
+      show_initiation_time: false, //选择时间默认隐藏
+      show_end_time: false,//选择截止时间
+      show_type: false,//选择问题类型
+      show_category: false,  //风险类型
+      show_receiver: false, //接收人上拉菜单
+      valueTheme: '',//输入主题
+      columnsType: [], //问题类型
+      receiver: [], //所有接收人
+      buildList: [],  //楼栋集合
+      floorList: [],  //楼层集合
+      // valueInitiation: '',//选择时间
+      // valueType: '',//选择问题类型
+      valueEnd: '',//选择整改截止时间
+      minDate: new Date(), //最小选择时间
+      loadingType: false,
+      form: {
+        theme: "",  //主题
+        qt: "",  //问题类型
+        initiator: JSON.parse(localStorage.getItem("loginUserInfo")).loginUserInfo.cName,  //发起人
+        person: [],  //接收人
+        startTime: "",  //发起时间
+        describe: "",  //问题描述
+        completionTime: "",  //整改截止时间
+        category: 1,  //风险类型
+        building: "",  //楼栋
+        floor: ""  //楼层
+      },
+      columnsCategory: [],
+      categoryList: [{label: "质量", value: 1}, {label: "安全", value: 2}],
+      categoryVal: "",  //风险类型名
+      personVal: [],  //接收人
+      photoList: []
+    };
+  },
+  // beforeRouteEnter(to, from, next) {
+  //   next(vm => {
+  //     if (localStorage.getItem("userId") == "") {
+  //       vm.$router.push("/login");
+  //     }
+  //   });
+  // },
+  created(){
+    this.getBuildingData()
+  },
+  methods: {
+    toggleCheckbox(index, id){
+      this.$refs.checkboxes[index].toggle();
+      this.form.person.push(id)
+    },
+    /**
+     * @name 获取问题类型
+     */
+    getQuestionType() {
+      this.loadingType = true;
+      this.Request(GetDictInfoList({ProjectID:localStorage.getItem("projectid"), DICode: "风险类型"})).then(data => {
+        if (data.StatusCode === 200) {
+          if(data.Detiel.length > 0){
+            for (let i = 0; i < data.Detiel.length; i++) {
+              this.columnsType.push(data.Detiel[i].cDIValue);
+            }
+          }else{
+            this.columnsType = [];
+            this.$toast({
+              className: "my-toast",
+              type: "fail",
+              message: "暂无数据！"
+            });
+          }
+          // for (let i = 0; i < data.Detiel.length; i++) {
+          //   let Option1 = {};
+          //   Option1.label = data.Detiel[i].cDIName;
+          //   Option1.value = data.Detiel[i].cDIValue;
+          //   this.questionType.push(Option1);
+          // }
+        } else {
+          this.$toast({
+            className: "my-toast",
+            type: "fail",
+            message: data.Message
+          });
+        }
+      });
+      this.loadingType = false;
+    },
+    /**
+     * @name 获取接收人数据
+     */
+    getReceiver() {
+      this.Request(
+        GetAllUserList({ projectId: this.ProjectID })
+      ).then(data => {
+        if (data.StatusCode === 200) {
+          if(data.Detiel.length > 0){
+            this.receiver = data.Detiel
+            // for (let i = 0; i < data.Detiel.length; i++) {
+            //   let Option1 = {};
+            //   Option1.label = data.Detiel[i].text;
+            //   Option1.value = data.Detiel[i].id;
+            //   this.receiver.push(Option1);
+            // }
+          }else{
+            this.receiver = [];
+            this.$toast({
+              className: "my-toast",
+              type: "fail",
+              message: "暂无数据！"
+            });
+          }
+        } else {
+          this.$toast({
+            className: "my-toast",
+            type: "fail",
+            message: data.Message
+          });
+        }
+      });
+    },
+    /**
+     * @name 获取模型的楼栋信息
+     */
+    getBuildingData() {
+      this.pickerLoading = true;
+      this.Request(
+        GetBuilding({ projectid: this.ProjectID })
+      ).then(data => {
+        if (data.StatusCode === 200) {
+          if (data.Detiel.length > 0) {
+            this.buildList = data.Detiel;
+          }else{
+            this.buildList = [];
+          }
+        } else {
+          this.$toast({
+            className: "my-toast",
+            type: "fail",
+            message: data.Message
+          });
+        }
+      });
+      this.pickerLoading = false;
+    },
+    /**
+     * @name 根据楼栋获取模型的楼层
+     */
+    getFloorbyBuildingData() {
+      this.Request(
+        GetFloorbyBuilding({
+          projectid: localStorage.getItem("projectid"),
+          building: this.form.building,
+        })
+      ).then(data => {
+        if (data.StatusCode === 200) {
+          if (data.Detiel.length > 0) {
+            this.floorList = data.Detiel
+          } else {
+            this.floorList = [];
+          }
+        } else {
+          this.$toast({
+            className: "my-toast",
+            type: "fail",
+            message: data.Message
+          });
+        }
+      });
+    },
+    /**
+     * @name 选择风险类型
+     */
+    choseCategory(){
+      this.show_category = true
+      // this.columnsCategory = [{values: this.categoryList}]
+      this.columnsCategory = [{label: "质量", value: 1}, {label: "安全", value: 2}]
+    },
+    /**
+     * @name 选择楼栋
+     */
+    choseBuilding(){
+      if(this.buildList == ""){
+        this.getBuildingData()
+      }
+      this.popupShow = true;
+      this.columns = this.buildList;
+      this.pickerTitle = "楼栋";
+      this.value_key = "text"
+    },
+    /**
+     * @name 选择楼层
+     */
+    choseFloor(){
+      if (this.form.building == "") {
+        this.$toast({
+          className: "my-toast",
+          message: "请先选择楼栋！"
+        });
+        return;
+      }
+      this.popupShow = true;
+      this.columns = this.floorList;
+      this.pickerTitle = "楼层";
+      this.value_key = "text"
+    },
+    onConfirmCategory(value){
+      this.form.category = value.value
+      this.categoryVal = value.label
+      this.show_category = false
+    },
+    onSelect(v) {
+      this.isSelect = false;
+      let action = this.selAction;
+      switch (action) {
+        case "buildingValue":
+          {
+            this.typeValue = v.name;
+          }
+          break;
+      
+        default:
+          break;
+      }
+    },
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    },
+    //点击确认完成
+    complete() {
+      this.loadingBtm = true;
+      let params = {
+        CurUserID: Number(this.userID),  //当前用户ID
+        ProjectID: this.ProjectID,  //项目ID
+        Subject: this.form.theme,  //主题
+        Category: this.form.category,  //风险类别 1：质量 2：安全
+        ProblemType: this.form.qt,  //问题类型
+        Initiator: Number(this.userID),  //发起人ID
+        InitiateTime: require('moment')(this.form.startTime).format('YYYY-MM-DD'),  //发起时间
+        Problem: this.form.describe,  //问题描述
+        DeadLine: require('moment')(this.form.completionTime).format('YYYY-MM-DD'),  //整改截止时间
+        listViewpoints: [],  //模型视点
+        PhotoList: this.photoList,  //上传问题照片
+        ReceiverList: this.form.person,  //接收人
+        Building: this.form.building,  //楼栋
+        Floor: this.form.floor  //楼层
+      }
+      // console.log("风险-发布问题：", params);
+      this.Request(PublishRisk(params)).then(data => {
+        // console.log("风险-", data);
+        if (data.StatusCode === 200) {
+          this.$router.go(-1);
+          this.$toast({
+            className: "my-toast",
+            type: "success",
+            message: "添加成功！"
+          });
+        } else {
+          this.$toast({
+            className: "my-toast",
+            type: "fail",
+            message: data.Message
+          });
+        }
+        this.loadingBtm = false;
+      });
+    },
+    //点击问题类型确定
+    onConfirmType(value) {
+      // console.log(`当前值：${value}`);
+      this.form.qt = value
+      this.show_type = false
+    },
+    //点击发起时间确定
+    onConfirmInitiation(value) {
+      console.log(`当前值：${value}`);
+      // this.valueInitiation = require('moment')(value).format('YYYY-MM-DD')
+      this.form.startTime = require('moment')(value).format('YYYY-MM-DD')
+      this.show_initiation_time = false;
+    },
+    //点击整改截止时间确定
+    onConfirmEnd(value) {
+      console.log(`当前值：${value}`);
+      this.form.completionTime = require('moment')(value).format('YYYY-MM-DD')
+      this.show_end_time = false
+    },
+    /**
+     * @name 点击取消按钮时触发
+     */
+    onCancel() {
+      this.show_initiation_time = false;
+      this.show_end_time = false
+      this.show_type = false
+      this.show_category = false
+    },
+    /**
+     * @name 点击完成按钮时触发
+     */
+    onConfirm(value, index){
+      switch (this.pickerTitle) {
+        case "楼栋":
+          {
+            this.form.building = value.text;
+            this.popupShow = false;
+            this.getFloorbyBuildingData()
+          }
+          break;
+        case "楼层":
+          {
+            this.form.floor = value.text;
+            this.popupShow = false;
+          }
+          break;
+      
+        default:
+          break;
+      }
+    },
+    //选择发起时间
+    isShowInitiationTime() {
+      this.show_initiation_time = true;
+    },
+    //选择整改截止时间
+    isShowEndTime() {
+      this.show_end_time = true
+    },
+    //选择问题类型
+    isShowType() {
+      this.show_type = true
+      this.getQuestionType()
+    },
+    /**
+     * @name 打开接收人上拉菜单
+     */
+    openReceiver(){
+      this.show_receiver = true
+      this.getReceiver()
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-daily
+  width 100%
+  height 100%
+  .van-nav-bar
+    // height 88px
+    // line-height 88px
+    // border-bottom 1px solid #E5E5E5
+    .fontsize
+      // font-size 42px
+      // color #333
+      // display inline-block
+      // vertical-align middle
+  .Interlayer
+    height 88px
+  .wrapper
+    .details_box
+      box-sizing border-box
+      padding 0 22px
+      background-color #fff
+      font-size 30px
+      color #333
+      .details
+        height 88px
+        line-height 88px
+        border-bottom 2px solid #E5E5E5
+        .el-icon-arrow-right
+          line-height 88px
+          float right
+      .details_border
+        border 0
+      .describe
+        padding 25px 0 20px
+        .describe_content
+          display inline-block
+          width 100%
+          line-height 50px
+    .picture
+      box-sizing border-box
+      padding 0 22px 25px
+      font-size 30px
+      font-weight 500
+      color #333
+      .photo
+        line-height 90px
+        font-weight bold
+      .photo_img
+        .photoImg
+          margin-right 45px
+          width 200px
+          height 200px
+        .photoImg:nth-child(3n)
+          margin 0
+        .Img
+          display inline-block
+          border-radius 8px
+          margin-right 45px
+          width 200px
+          height 200px
+          text-align center
+          line-height 200px
+          vertical-align bottom
+          position relative
+          .van-icon
+            position absolute
+            width 20px
+            height 20px
+            top -10px
+            right 0
+            color #FF3366
+        .img
+          display inline-block
+          border 2px solid #BDC1C6
+          border-radius 8px
+          margin-right 8px
+          width 200px
+          height 200px
+          text-align center
+          line-height 200px
+          vertical-align bottom
+          .upload_photos
+            width 36px
+            height 36px
+        span
+          vertical-align bottom
+          color #999
+        .img:nth-child(3n)
+          margin 0
+    .confirm
+      width 702px
+      height 88px
+      line-height 88px
+      font-size 30px
+      margin 60px auto 40px
+      text-align center
+      background-color #5A93FF
+      border-radius 8px
+      color #fff
+    .completion_time
+      padding 30px 24px
+      font-size 30px
+      background-color #fff
+
+.container-daily .details_box .van-cell{
+  font-size 30px
+  padding 0
+  line-height 88px
+}
+.container-daily .receiver .van-checkbox{
+  // font-size 30px
+  // height 66px
+  // line-height 66px
+  // padding-left 20px
+}
+.container-daily .receiver.van-actionsheet{
+  max-height: 50%;
+}
+
+</style>
+<style>
+@import "~@/assets/css/resetVant.css";
+</style>

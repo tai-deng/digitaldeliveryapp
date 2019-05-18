@@ -1,0 +1,1733 @@
+<!-- 整改认证 abarbeitung -->
+<template>
+  <div class="container-abarbeitung">
+    <van-nav-bar title="整改认证" left-arrow border @click-left="onClickLeft"></van-nav-bar>
+    <div class="content">
+      <div class="abarbeitung-content-radio flex">
+          <div class="abarbeitung-content-radio-l" >
+            <span style="width:120px;"> 类型：</span>
+          </div>
+          <div class="abarbeitung-content-radio-r">
+              <van-radio-group v-model="isRadio" @change="changeRadio" class="flex">
+                <van-radio name="1">
+                  沟通管理 
+                  <img slot="icon" slot-scope="props" :src="props.checked ? radioIcon.active : radioIcon.normal" >
+                </van-radio>
+                <van-radio name="2">
+                  工程变更
+                  <img slot="icon"  slot-scope="props" :src="props.checked ? radioIcon.active : radioIcon.normal">
+                </van-radio>
+                <van-radio name="3">
+                  日常巡检
+                  <img slot="icon" slot-scope="props" :src="props.checked ? radioIcon.active : radioIcon.normal" >
+                </van-radio>
+                <van-radio name="4">
+                  物资需求
+                  <img slot="icon" slot-scope="props" :src="props.checked ? radioIcon.active : radioIcon.normal" >
+                </van-radio>
+              </van-radio-group>
+          </div>
+      </div>
+      <!-- 工程变更 -->
+      <template v-if="isRadio=='2'">
+
+          <van-cell-group class="operationCategory item-s">
+            <van-field
+              v-model="codeValue"
+              disabled  label="编码："
+              placeholder="请输入编码"/>
+          </van-cell-group>   
+
+
+          <!-- 主题  value-key="cDIName"-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择主题"  label="主题："  right-icon="arrow" 
+              disabled v-model="themeValue"
+              @click-right-icon="choicethemeValue(1)" />
+          </van-cell-group>
+          
+
+        
+          <!-- 变更类型 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择变更类型"  label="变更类型："  right-icon="arrow" 
+              disabled v-model="typeValue"
+              @click-right-icon="choicetypeValue('工程类型')" />
+          </van-cell-group>
+          
+
+        <div class="project-title flex">位置</div>
+
+        <div class="project-content">
+          <!-- 楼栋 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择楼栋"    label="楼栋：" right-icon="arrow" 
+              disabled v-model="operationCategory"
+              @click-right-icon="choiceOperationCategory"
+            />
+          </van-cell-group>
+          
+          <!-- majorValue专业 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择专业"    label="专业：" right-icon="arrow" 
+              disabled v-model="majorValue"
+              @click-right-icon="choicemajorValue"
+            />
+          </van-cell-group>
+          
+
+          <!-- levelValue 楼层-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择楼层"    label="楼层：" right-icon="arrow" 
+              disabled v-model="levelValue"
+              @click-right-icon="choicelevelValue"
+            />
+          </van-cell-group>
+          
+          
+          <van-cell-group class="item-s">
+            <van-field
+                v-model="positionValue"
+                label="详细位置：" type="textarea"
+                placeholder="请输入详细位置"  rows="2"/>
+          </van-cell-group>
+          <div class="abarbeitung-type flex-between item-s"> </div>
+
+          <!-- drivenValue 构件名称：-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择构件名称"    label="构件名称：" right-icon="arrow" 
+              disabled v-model="drivenValue"
+              @click-right-icon="choicedrivenValue"
+            />
+          </van-cell-group>
+          
+
+          <!-- 发起时间：-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择发起时间"    label="发起时间：" right-icon="arrow" 
+              disabled v-model="UpDataValue"
+              @click-right-icon="getUpData"
+            />
+          </van-cell-group>
+          
+
+
+          <div class="abarbeitung-type flex-between item-s">
+            <van-cell-group>
+              <van-field
+                v-model="peopleValue"
+                disabled="disabled"
+                label="发起人："/>
+            </van-cell-group>
+          </div>
+
+          <van-cell-group class="item-s">
+            <van-field
+                v-model="changeContentValue"
+                label="变更内容：" type="textarea"
+                placeholder="请输入变更内容"  rows="2"/>
+          </van-cell-group>
+          <div class="abarbeitung-type flex-between item-s"></div>
+
+          
+        </div>
+
+        <div class="project-title flex">上传凭证</div>
+        <div class="uploader flex">
+
+          <!-- <div class="van-uploader" v-for="(item,index) in photoList"  :key="index">
+            <img :src="item.TokenUrL+item.smallPhotoURL"  @click="onRemove(index)" >
+          </div>
+          <van-uploader :after-read="onRead" accept="image/gif, image/jpeg" multiple>
+            <van-icon name="photograph" />
+          </van-uploader> -->
+          <div class="van-uploader" v-for="(item,index) in photoShow"  :key="index">
+            <img :src="item"   >
+          </div>
+        </div>
+        <div class="project-title flex">物料清单</div>
+        <div class="materials_table">
+          <el-table
+            style="width:100%;font-size:30px;box-sizing:border-box;"
+            :data="buyThingTable"
+            :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}">
+            <el-table-column prop="ResourceName" label="物料名称"></el-table-column>
+            <el-table-column prop="BuildName" label="楼栋" width="70"></el-table-column>
+            <el-table-column prop="Floor" label="楼层" width="80"></el-table-column>
+            <el-table-column prop="BOQ" label="变更前施工预算量" width="80"></el-table-column>
+            <el-table-column prop="AdjustBOQ" label="变更后施工预算量" width="80"></el-table-column>
+            <el-table-column prop="DiffBOQ" label="差额" width="80"></el-table-column>
+          </el-table>
+        </div>
+
+        <div class="project-title flex">工作流程</div>
+        <div class="flow-content">
+          <div class="flow-content-item" v-for="(item,index) in flowData" :key="index">
+            <div class="flow-content-item-l flex-row" :class="[item.done?'action-b':'action-a']">
+              {{index+1}}
+              <div
+                class="line"
+                :class="[item.done? 'line-b':'line-a']"
+                v-if="index !== flowData.length-1"
+              ></div>
+            </div>
+
+            <div class="flow-content-item-c">
+              <div class="flow-content-item-c-w flex">
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.PersonName}}</div>
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.OrgName}}</div>
+                <div class="flow-content-item-c-l flex-row">{{item.DeptName}}</div>
+              </div>
+              <div class="flow-content-item-c-triangle">
+                <div class="flow-content-item-c-triangle-b"></div>
+              </div>
+              <div class="flow-content-item-c-pic flex-row" v-if="item.Status">
+                <template v-if="item.listAuthPhoto==null?false:(item.listAuthPhoto.lenth>0?true:false)">
+                  <img :src="item.listAuthPhoto">
+                </template>
+                <template v-else>
+                  <div class="pic-warp flex-row">
+                    <img src="./user_assets/imgs/up-proof.png">
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <div class="flow-content-item-r"></div>
+          </div>
+        </div>
+
+      </template>
+      <!-- 日常巡检 -->
+      <template v-else-if="isRadio== '3'">
+
+        <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择主题"  label="主题："  right-icon="arrow" 
+              disabled v-model="themeValue"
+              @click-right-icon="choicethemeValue(4)" />
+        </van-cell-group>
+
+        <!-- 类型 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择问题类型"  label="问题类型："  right-icon="arrow" 
+              disabled v-model="typeValue"
+              @click-right-icon="choicetypeValue('风险类型')" />
+          </van-cell-group>
+
+          <div class="abarbeitung-type flex-between item-s">
+            <van-cell-group>
+              <van-field
+                v-model="peopleValue"
+                disabled="disabled"
+                label="发起人："/>
+            </van-cell-group>
+          </div>
+
+        <div class="project-content">
+
+           <!-- 发起时间：-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择发起时间"    label="发起时间：" right-icon="arrow" 
+              disabled v-model="UpDataValue"
+              @click-right-icon="getUpData"
+            />
+          </van-cell-group>
+
+          <van-cell-group class="item-s">
+            <van-field
+                v-model="rc_describeValue"
+                label="变更内容：" type="textarea"
+                placeholder="请输入变更内容"  rows="2"/>
+          </van-cell-group>
+          <div class="abarbeitung-type flex-between item-s"></div>
+
+          
+
+          <div class="project-title flex">照片</div>
+          <div class="uploader flex">
+
+            <!-- <div class="van-uploader" v-for="(item,index) in photoList"  :key="index">
+              <img :src="item.TokenUrL+item.smallPhotoURL"  @click="onRemove(index)" >
+            </div>
+            <van-uploader :after-read="onRead" accept="image/gif, image/jpeg" multiple>
+              <van-icon name="photograph" />
+            </van-uploader> -->
+
+            <div class="van-uploader" v-for="(item,index) in photoShow"  :key="index">
+              <img :src="item"   >
+            </div>
+          </div>
+
+
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择接收人"  label="接收人："  right-icon="arrow" 
+              disabled v-model="rc_receiveValue"
+              @click-right-icon="choiceAllPeople" />
+          </van-cell-group>
+
+
+
+
+
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择整改时间"    label="整改时间：" right-icon="arrow" 
+              disabled v-model="lastData"
+              @click-right-icon="getlastData"
+            />
+          </van-cell-group>
+
+        </div>
+      </template>
+      <!-- 沟通管理 -->
+      <template v-else-if="isRadio== '1'">
+        <!-- 主题  value-key="cDIName"-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择主题"  label="主题："  right-icon="arrow" 
+              disabled v-model="themeValue"
+              @click-right-icon="choicethemeValue(3)" />
+          </van-cell-group>
+
+          <!-- 类型 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择类型"  label="类型："  right-icon="arrow" 
+              disabled v-model="typeValue"
+              @click-right-icon="choicetypeValue('沟通类型')" />
+          </van-cell-group>
+
+          <van-cell-group class="item-s">
+            <van-field
+                v-model="gt_describeValue"
+                label="描述：" type="textarea"
+                placeholder="请输入描述"  rows="2"/>
+          </van-cell-group>
+          <div class="abarbeitung-type flex-between item-s"> </div>
+
+
+
+        <div class="project-title flex">工程部位</div>
+        <!-- 楼栋 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择楼栋"    label="楼栋：" right-icon="arrow" 
+              disabled v-model="operationCategory"
+              @click-right-icon="choiceOperationCategory"
+            />
+          </van-cell-group>
+          
+          <!-- majorValue专业 -->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择专业"    label="专业：" right-icon="arrow" 
+              disabled v-model="majorValue"
+              @click-right-icon="choicemajorValue"
+            />
+          </van-cell-group>
+          
+
+          <!-- levelValue 楼层-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择楼层"    label="楼层：" right-icon="arrow" 
+              disabled v-model="levelValue"
+              @click-right-icon="choicelevelValue"
+            />
+          </van-cell-group>
+          
+          
+          <van-cell-group class="item-s">
+            <van-field
+                v-model="positionValue"
+                label="详细位置：" type="textarea"
+                placeholder="请输入详细位置"  rows="2"/>
+          </van-cell-group>
+          <div class="abarbeitung-type flex-between item-s"> </div>
+
+          <!-- drivenValue 构件名称：-->
+          <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择构件名称"    label="构件名称：" right-icon="arrow" 
+              disabled v-model="drivenValue"
+              @click-right-icon="choicedrivenValue"
+            />
+          </van-cell-group>
+
+
+
+        <div class="project-title flex">上传凭证</div>
+        <div class="uploader flex">
+          <!-- <div class="van-uploader" v-for="(item,index) in photoList"  :key="index">
+            <img :src="item.TokenUrL+item.smallPhotoURL"  @click="onRemove(index)" >
+          </div>
+          <van-uploader :after-read="onRead" accept="image/gif, image/jpeg" multiple>
+            <van-icon name="photograph" />
+          </van-uploader> -->
+          <div class="van-uploader" v-for="(item,index) in photoShow"  :key="index">
+            <img :src="item"   >
+          </div>
+        </div>
+
+        <div class="project-title flex">工作流程</div>
+        <div class="flow-content">
+          <div class="flow-content-item" v-for="(item,index) in flowData" :key="index">
+            <div class="flow-content-item-l flex-row" :class="[item.done?'action-b':'action-a']">
+              {{index+1}}
+              <div
+                class="line"
+                :class="[item.done? 'line-b':'line-a']"
+                v-if="index !== flowData.length-1"
+              ></div>
+            </div>
+
+            <div class="flow-content-item-c">
+              <div class="flow-content-item-c-w flex">
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.PersonName}}</div>
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.OrgName}}</div>
+                <div class="flow-content-item-c-l flex-row">{{item.DeptName}}</div>
+              </div>
+              <div class="flow-content-item-c-triangle">
+                <div class="flow-content-item-c-triangle-b"></div>
+              </div>
+              <div class="flow-content-item-c-pic flex-row" v-if="item.Status">
+                <template v-if="item.listAuthPhoto==null?false:true">
+                  <img :src="item.listAuthPhoto">
+                </template>
+                <template v-else>
+                  <div class="pic-warp flex-row">
+                    <img src="./user_assets/imgs/up-proof.png">
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <div class="flow-content-item-r"></div>
+          </div>
+        </div>
+      </template>
+      <!-- 物资需求 -->
+      <template v-else-if="isRadio== '4'">
+        <!-- 采购批次 -->
+        <van-cell-group class="operationCategory item-s">
+            <van-field placeholder="请选择采购批次"  label="采购批次："  right-icon="arrow" 
+              disabled v-model="buyNumber"
+              @click-right-icon="choicebuyNumber" />
+        </van-cell-group>
+        <!-- 申请人 -->
+        <van-cell-group class="operationCategory item-s">
+          <van-field
+            v-model="getPeople" disabled="disabled"
+            label="申请人"   type="textarea"
+            placeholder="请输入申请人"
+            rows="1"/>
+        </van-cell-group>
+
+         <!-- 发起时间：-->
+        <van-cell-group class="operationCategory item-s">
+          <van-field placeholder="请选择发起时间"    label="发起时间：" right-icon="arrow" 
+              disabled v-model="UpDataValue"
+              @click-right-icon="getUpData"
+            />
+        </van-cell-group>
+          <!-- 需用时间 -->
+        <van-cell-group class="operationCategory item-s">
+          <van-field placeholder="请选择需用时间"    label="需用时间：" right-icon="arrow" 
+              disabled v-model="lastData"
+              @click-right-icon="getlastData"
+            />
+        </van-cell-group>
+        
+        <div class="materials_table">
+          <el-table
+            style="width:100%;font-size:30px;box-sizing:border-box;"
+            :data="buyThingTable"
+            :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}">
+            <el-table-column prop="ResourceName" label="物料名称"></el-table-column>
+            <el-table-column prop="BuildName" label="楼栋" width="70"></el-table-column>
+            <el-table-column prop="Floor" label="楼层" width="80"></el-table-column>
+            <el-table-column prop="BOQ" label="变更前施工预算量" width="80"></el-table-column>
+            <el-table-column prop="AdjustBOQ" label="变更后施工预算量" width="80"></el-table-column>
+            <el-table-column prop="DiffBOQ" label="差额" width="80"></el-table-column>
+          </el-table>
+        </div>
+        <div class="project-title flex">工作流程</div>
+        <div class="flow-content">
+          <div class="flow-content-item" v-for="(item,index) in flowData" :key="index">
+            <div class="flow-content-item-l flex-row" :class="[item.done?'action-b':'action-a']">
+              {{index+1}}
+              <div
+                class="line"
+                :class="[item.done? 'line-b':'line-a']"
+                v-if="index !== flowData.length-1"
+              ></div>
+            </div>
+
+            <div class="flow-content-item-c">
+              <div class="flow-content-item-c-w flex">
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.PersonName}}</div>
+                <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.OrgName}}</div>
+                <div class="flow-content-item-c-l flex-row">{{item.DeptName}}</div>
+              </div>
+              <div class="flow-content-item-c-triangle">
+                <div class="flow-content-item-c-triangle-b"></div>
+              </div>
+              <div class="flow-content-item-c-pic flex-row" v-if="item.Status">
+                <template v-if="item.listAuthPhoto==null?false:true">
+                  <img :src="item.listAuthPhoto">
+                </template>
+                <template v-else>
+                  <div class="pic-warp flex-row">
+                    <img src="./user_assets/imgs/up-proof.png">
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <div class="flow-content-item-r"></div>
+          </div>
+        </div>
+
+
+
+
+
+      </template>
+
+
+      <div class="btn-warp">
+        <van-button class="btn" square type="primary" block @click="sumbitAll">
+          <template v-if="isRadio=='3'">确认接收</template>
+          <template v-else >确认</template>
+        </van-button>
+      </div>
+
+
+      <van-popup v-model="themeValue_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="主题"
+              :columns="themeValueArr"
+              value-key="NAME"
+              @cancel="themeValueCancel"
+              @confirm="themeValueConfirm"/>
+      </van-popup>
+      <van-popup v-model="upData" position="bottom" class="iPopup">
+            <van-datetime-picker title="发起时间"
+            v-model="currentDate"
+            type="date"
+            @cancel="UpDataCancel"
+            @confirm="UpDataConfirm"/>
+      </van-popup>
+
+
+      <van-popup v-model="lastData_show" position="bottom" class="iPopup">
+            <van-datetime-picker title="整改时间"
+            v-model="currentDate"
+            type="date"
+            @cancel="lastDataCancel"
+            @confirm="lastDataConfirm"/>
+      </van-popup>
+
+
+      <van-popup v-model="drivenValue_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="构件名称"
+              :columns="drivenValueArr"
+              @cancel="drivenValueCancel"
+              @confirm="drivenValueConfirm"/>
+      </van-popup>
+      <van-popup v-model="levelValue_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="楼层"
+              :columns="levelValueArr"
+              @cancel="levelValueCancel"
+              @confirm="levelValueConfirm"/>
+      </van-popup>
+      <van-popup v-model="operationCategory_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="楼栋"
+              :columns="operationCategory_columns"
+              @cancel="onOperationCategoryCancel"
+              @confirm="onOperationCategoryConfirm"/>
+      </van-popup>
+      <van-popup v-model="majorValue_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="专业"
+              :columns="majorValueArr"
+              @cancel="majorValueCancel"
+              @confirm="majorValueConfirm"/>
+      </van-popup>
+      <van-popup v-model="typeValue_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="类型"
+              :columns="typeValueArr"
+              value-key="label"
+              @cancel="typeValueCancel"
+              @confirm="typeValueConfirm"/>
+      </van-popup>
+      
+      <van-popup v-model="buyNumber_show" position="bottom" class="iPopup">
+            <van-picker show-toolbar  title="采购批次"
+              :columns="buyNumberArr"
+              value-key="NAME"
+              @cancel="buyNumberCancel"
+              @confirm="buyNumberConfirm"/>
+      </van-popup>
+
+      <van-actionsheet v-model="AllPeople_show" :close-on-click-overlay="true" class="receiver">
+        <van-checkbox-group v-model="personVal">
+          <van-cell-group>
+            <van-cell
+              v-for="(item, index) in receiver"
+              clickable  :key="item.id" :title="item.text"
+              @click="toggleCheckbox(index, item.id)" class="my-cell" >
+              <van-checkbox :name="item.text" ref="checkboxes" class="my-checkbox" shape="square" />
+            </van-cell>
+          </van-cell-group>
+        </van-checkbox-group>
+      </van-actionsheet>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {GetBuilding,GetSpecialtybyBuilding,GetFloorbyBuilding,GetConstructElementNamebyBuildingSp,UploadImages,GetChangeInfo,QueryPurchaseInfoItems,
+      GetDictInfoList,GetAllUserList,QueryWorkBusiList,GetDetail,GetRiskInfoByID,DoRiskWork} from '@/api/api.js'
+export default {
+  data() {
+    return {
+      // 单选
+      isRadio: "1",
+      // radio 图标
+      radioIcon: {
+        normal: require("./user_assets/imgs/radio-a.png"),
+        active: require("./user_assets/imgs/radio-b.png")
+      },
+      //   日常巡检
+
+      // 描述
+      rc_describeValue: "",
+      // 接收人
+      rc_receiveValue: "",
+      AllPeople_show:false,
+      receiver:[],
+      AllpeopleId:[],
+      personVal: [],  //接收人
+
+
+      // 整改截止时间
+      lastData:'',
+      lastData_show:false,
+      // 照片
+      rc_voucherData: [
+        require("./user_assets/imgs/user-portrait.png"),
+        require("./user_assets/imgs/browseMode-big.png")
+      ],
+
+      // 凭证
+      voucherData: [
+        require("./user_assets/imgs/user-portrait.png"),
+        require("./user_assets/imgs/browseMode-big.png")
+      ],
+      // 物料清单数据
+      buyThingTable: [
+        {
+          name: "c20混凝土",
+          building: "A1",
+          level: "1F",
+          befor: "10000.00m³",
+          after: "678.21m³",
+          difference: "678.21m³"
+        },
+        {
+          name: "c20混凝土",
+          building: "A2",
+          level: "2F",
+          befor: "10000.00m³",
+          after: "678.21m³",
+          difference: "678.21m³"
+        },
+        {
+          name: "门",
+          building: "A3",
+          level: "1F",
+          befor: "15扇",
+          after: "10扇",
+          difference: "10扇"
+        },
+        {
+          name: "门",
+          building: "A4",
+          level: "3F",
+          befor: "15扇",
+          after: "10扇",
+          difference: "10扇"
+        }
+      ],
+      // 流程数据
+      flowData: [
+        {
+          id: 1,
+          name: "王海洋",
+          unit: "建设单位",
+          department: "工程部",
+          done: true,
+          img: require("./user_assets/imgs/browseMode-big.png")
+        },
+        {
+          id: 1,
+          name: "某某某",
+          unit: "建设单位",
+          department: "工程部",
+          done: true
+        }
+      ],
+
+      
+      //   沟通管理数据
+      //描述
+      gt_describeValue: "",
+      // 沟通管理--凭证
+      gt_voucherData: [   ],
+      // 流程数据
+      gt_flowData: [
+        {
+          id: 1,
+          name: "王海洋",
+          unit: "建设单位",
+          department: "工程部",
+          done: true,
+          img: "./user_assets/imgs/browseMode-big.png"
+        },
+        {
+          id: 1,
+          name: "某某某",
+          unit: "建设单位",
+          department: "工程部",
+          done: true
+        },
+        {
+          id: 1,
+          name: "某某某",
+          unit: "建设单位",
+          department: "工程部",
+          done: false
+        },
+        {
+          id: 1,
+          name: "某某某",
+          unit: "建设单位",
+          department: "工程部",
+          done: false
+        }
+      ],
+      
+       //   工程变更数据
+      themeValue: "",// 主题
+      themeValueArr:[],
+      themeValue_show:false,
+
+      operationCategory_columns: [], //楼栋数组
+      operationCategory_show:false,
+      operationCategory:'', //显示的楼栋名称
+      projectGlass:'',  //要传的楼栋id
+
+      majorValue: "",    //显示的专业
+      majorValue_id:'',
+      majorValue_show:false,
+      majorValueArr:[],   //专业数组
+
+      levelValue: "",    //显示的楼层
+      levelValue_id:'',
+      levelValue_show:false,
+      levelValueArr:[],   //楼层数组
+
+      positionValue: "", // 详细位置
+
+      drivenValue: "",  // 显示的构件
+      drivenValue_id:'',
+      drivenValueArr:[], //构件数组
+      drivenValue_show:false,
+
+      currentDate: new Date(), //发起时间
+      upData:false,//发起时间
+      UpDataValue:'',
+
+      changeContentValue: "", // 变更内容
+      peopleValue:'', //发起人
+      peopleId:'',//发起人ID
+
+      typeValue: "", // 变更类型
+      typeValue_show:false,
+      typeValueArr:[], //变更类型数组
+      typeValue_id:'',
+
+      codeValue:'',//工程变更的编码
+
+      //物资需求
+      //采购批次
+      buyNumber:'',
+      buyNumberArr:[],
+      buyNumber_show:false,
+
+      getPeople:'',//申请人
+      getPeopleId:'',//申请人id
+      photo:'',//照片地址
+      photoList:[],//上传的照片
+      photoShow:[],//展示的照片
+
+      titleId:'',//展示数据的id
+      userAll:{},//使用者的相关信息-用于日常巡检-接收
+    };
+  },
+  created(){
+    var text=localStorage.getItem('loginUserInfo');
+    var post=JSON.parse(text).loginUserInfo;
+    this.peopleValue=post.cName;
+    this.peopleId=post.ID;
+    console.log(post);
+    this.getBuild();
+    // this.getTitle(1);
+  },
+  methods: {
+    onClickLeft() {
+      this.$router.back(-1);
+    },
+    //切换单选框的时候--清空-数据
+    changeRadio(){
+        this.codeValue='';//工程变更的编码
+        this.typeValue=''; // 变更类型
+        this.typeValue_id='';//变更类型-id
+        this.operationCategory='';//显示的楼栋名称
+        this.projectGlass=''; //要传的楼栋id
+        this.majorValue=''; //显示的专业
+        this.majorValue_id=''; //专业id
+        this.levelValue=''; //显示的楼层
+        this.levelValue_id=''; //要传的楼栋id
+        this.positionValue=''; //详细位置
+        this.peopleValue='';//发起人
+        this.peopleId='';//发起人id 
+        this.changeContentValue='';//变更内容  dCreateTime
+        this.UpDataValue='';//发起时间
+        this.buyThingTable=[];//表格
+        this.flowData=[];//工作流程
+        this.themeValue='';//标题
+        this.themeValueArr=[];//标题数组
+        this.buyNumberArr=[];//采购批次数组
+        this.buyNumber='';//采购批次
+
+        this.getPeople='';//发起人
+        this.getPeopleId='';//发起人id 
+        this.UpDataValue='';//发起时间
+        this.lastData='';//需用时间
+
+        this.photoList=[];//上传的图片
+        this.photoShow=[];//显示的图片
+
+        this.rc_receiveValue='';//接收人--日常巡检
+        this.rc_describeValue='';//变更内容--日常巡检
+        this.gt_describeValue='';//描述--沟通管理
+
+        this.titleId='';//展示数据的id
+
+          
+
+
+
+
+     
+    },
+    //沟通管理--上传凭证
+    async onRead(file, detail){
+      let prams = [{
+        key: 'files', value: file.file
+      }]
+      let upload_images = await this.Request(UploadImages(prams))
+      if (upload_images.StatusCode == 200) {
+        // this.Photo = upload_images.Detiel[0].TokenUrL + upload_images.Detiel[0].URL;
+        // console.log(this.Photo);
+        if(upload_images.Detiel.length > 0){
+          this.photoList.push({
+            Id: upload_images.Detiel[0].Id, //上传后的文件名
+            URL: upload_images.Detiel[0].URL, //文件地址
+            smallPhotoURL: upload_images.Detiel[0].smallPhotoURL, //如果存在小图则返回小图地址
+            Type: upload_images.Detiel[0].Type, //文件类型
+            TokenUrL: upload_images.Detiel[0].TokenUrL //域名地址
+          });
+        }else{
+          this.$message({
+            type: "error",
+            message: upload_images.message ? upload_images.message : "图片上传失败",
+            center: "true"
+          });
+        }
+      } else {
+        this.$message({
+          type: 'error',
+          message: upload_images.message ? upload_images.message : '后台异常',
+          center: 'true'
+        })
+      }
+    },
+    onRemove(index) {
+      this.$alert("是否确认删除？", "提示！", {
+        confirmButtonText: "确定",
+        callback: action => {
+          if (action == "confirm") {
+            this.photoList.splice(index, 1);
+          }
+        }
+      });
+    },
+    /**
+     * 采购批次--物资需求
+     */
+    buyNumberCancel(){
+      this.buyNumber_show=false;
+    },
+    buyNumberConfirm(value){
+      this.buyNumber_show=false;
+      this.buyNumber=value.NAME
+
+      this.purchaseInfor(value.ID);//采购详情
+    },
+    choicebuyNumber(){
+      this.getTitle(2);
+      this.buyNumber_show=true;//查一个 获取批次的接口
+    },
+    /**
+     * 选择主题--工程变更
+     */
+    choicethemeValue(n){
+      this.getTitle(n);
+    },
+    themeValueCancel(){
+      this.themeValue_show=false;
+    },
+    themeValueConfirm(value){
+      this.themeValue_show=false;
+      this.themeValue=value.NAME; // ID---沟通管理
+      if(value.WorkType==1){//工程变更
+        this.getInforByTitle(value.ID);
+      }else if(value.WorkType==3){//沟通管理
+        this.GetMessage(value.ID)
+      }else if(value.WorkType==4){//日常巡检
+        this.GetRisk(value.ID)
+      }
+     
+    },
+    /**
+     * 接收人 多选--日常巡检
+     */
+    choiceAllPeople(){
+      this.getAllPeople();
+      this.AllPeople_show=true;
+    },
+    toggleCheckbox(index, id){
+      this.$refs.checkboxes[index].toggle();
+      this.AllpeopleId.push(id);  //要传送的id
+      this.rc_receiveValue=this.personVal.join(',');  //显示到页面的名字
+    },
+    /**
+     * 整改时间--日常巡检
+     */
+    lastDataCancel(){
+      this.lastData_show=false;
+    },
+    lastDataConfirm(date){
+      this.lastData_show=false;
+      var value = new Date(date);  
+      this.lastData=value.getFullYear()+'/'+(value.getMonth() + 1)+ '/' + value.getDate() ;
+      console.log(this.lastData)
+    },
+    getlastData(){
+      this.lastData_show=true;
+    },
+    
+    /**
+     * 选择楼栋--工程变更
+     */
+    onOperationCategoryConfirm(value) {
+      this.operationCategory_show = false;
+      this.operationCategory=value.text;
+      this.projectGlass=value.id;
+    },
+    onOperationCategoryCancel() {
+      this.operationCategory_show = false;
+    },
+    choiceOperationCategory(){
+      this.operationCategory_show = true;
+    },
+    /**
+     * 选择专业--工程变更
+     */
+    choicemajorValue(){
+      this.getSpecialty();
+      this.majorValue_show = true;
+    },
+    majorValueCancel(){
+      this.majorValue_show = false;
+    },
+    majorValueConfirm(value){
+      this.majorValue_show = false;
+      this.majorValue=value.text;
+      this.majorValue_id=value.id;
+    },
+    /**
+     * 选择楼层--工程变更
+     */
+    choicelevelValue(){
+      this.getFloor();
+      this.levelValue_show=true;
+    },
+    levelValueCancel(){
+      this.levelValue_show=false;
+    },
+    levelValueConfirm(value){
+      this.levelValue_show=false;
+      this.levelValue=value.text;
+      this.levelValue_id=value.id;
+    },
+    /**
+     * 构件名称--工程变更  
+     */
+    drivenValueCancel(){
+      this.drivenValue_show=false;
+    },
+    choicedrivenValue(){
+      this.getElement();
+      this.drivenValue_show=true;
+    },
+    drivenValueConfirm(value){
+      this.drivenValue_show=false;
+      this.drivenValue=value.text;
+      this.drivenValue_id=value.id;
+    },
+    /**
+     * 发起时间--工程变更  
+     */
+    getUpData(){
+      this.upData=true;
+    },
+    UpDataCancel(){
+      this.upData=false;
+    },
+    UpDataConfirm(date){
+      this.upData=false;
+      var value = new Date(date);  
+      this.UpDataValue=value.getFullYear()+'/'+(value.getMonth() + 1)+ '/' + value.getDate() ;
+      console.log(this.UpDataValue)
+    },
+    /**
+     * 变更类型--工程变更  
+     */
+    choicetypeValue(name){
+      this.getInforList(name);//获取---变更类型
+    },
+    typeValueCancel(){
+      this.typeValue_show=false;
+    },
+    typeValueConfirm(value){
+      this.typeValue_show=false;
+      this.typeValue=value.label;
+      this.typeValue_id=value.value;
+      console.log(this.typeValue_id)
+    },
+
+    // 获取工程变更--楼栋 GetBuilding
+    getBuild(){
+      this.Request(GetBuilding({projectId:localStorage.getItem('projectid')})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.operationCategory_columns=res.Detiel;
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //根据楼栋获取专业
+    getSpecialty(){
+      if(this.projectGlass==''){
+        //没有楼栋的时候
+        this.$dialog.alert({message:'请先选择楼栋'});
+        return false;
+      }
+      this.Request(GetSpecialtybyBuilding({projectId:localStorage.getItem('projectid'),building:this.projectGlass})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.majorValueArr=res.Detiel;
+          console.log('专业',this.majorValueArr)
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //获取楼层 levelValueArr GetFloorbyBuilding
+    getFloor(){
+      if(this.projectGlass=='' || this.majorValue_id==''){
+        this.$dialog.alert({message:'请先选择楼栋和专业'});
+        return false;
+      }
+      this.Request(GetFloorbyBuilding({projectId:localStorage.getItem('projectid'),building:this.projectGlass,Specialty:this.majorValue_id})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.levelValueArr=res.Detiel;
+          console.log('楼层',this.levelValueArr)
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //根据楼栋获取施工图的构件名称 GetConstructElementNamebyBuildingSp
+    getElement(){
+      if(this.projectGlass=='' || this.levelValue_id==''){
+        this.$dialog.alert({message:'请先选择楼栋和楼层'});
+        return false;
+      }
+      var post={
+        projectId:localStorage.getItem('projectid'),
+        buildname:this.projectGlass,
+        floor:this.levelValue_id,
+      }
+      this.Request(GetConstructElementNamebyBuildingSp(post)).then(res=>{
+        if(res.StatusCode=='200'){
+          this.drivenValueArr=res.Detiel;
+          console.log('构件名称:',this.drivenValueArr)
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //  获取变更类型    
+    getInforList(name){
+      console.log(name);
+      this.Request(GetDictInfoList({projectId:localStorage.getItem('projectid'),DICode:name})).then(res=>{
+        this.typeValueArr=[];
+        this.typeValue='';
+        this.typeValue_id='';
+        if(res.StatusCode=='200'){
+          if(res.Detiel.length>0){
+            for (let i = 0; i < res.Detiel.length; i++) {
+              let Option1 = {};
+              Option1.label = res.Detiel[i].cDIName;
+              Option1.value = res.Detiel[i].ID;
+              this.typeValueArr.push(Option1);
+            }
+            this.typeValue_show=true;
+          }else{
+            this.$dialog.alert({message:'没有相关数据！'});
+            this.typeValue_show=false;
+          }
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+
+    },
+    //GetAllUserList 获取项目中的人员列表--接收人
+    getAllPeople(){
+      this.Request(GetAllUserList({projectId:localStorage.getItem('projectid')})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.receiver=res.Detiel;
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //QueryWorkBusiList  获取标题
+    async getTitle(WorkType){
+      var post={
+        ProjectId:localStorage.getItem('projectid'),
+        UserId:Number(localStorage.getItem('userId')),
+        WorkType:WorkType,   //1---变更，2--采购，3--沟通，4--风险  
+        Type:2,       //2-进行中，1-待接收，3-已完成
+        page:1,
+        rows:20,
+        start:1,
+        end:20,
+      }
+      //this.themeValue_show=true;
+      this.Request(QueryWorkBusiList(post)).then(res=>{
+        console.log('获取标题',res);
+        if(res.StatusCode=='200'){
+          this.themeValueArr=[];
+          if(res.Detiel.length>0){
+           
+            if(post.WorkType=='2'){
+              this.buyNumberArr=res.Detiel;
+              this.buyNumber_show=true;
+            }else{
+              this.themeValue_show=true;
+              this.themeValueArr=res.Detiel;
+            }
+            
+          }else{
+            this.$dialog.alert({message:'没有相关数据！'});
+            this.themeValue_show=false;
+            this.buyNumber_show=false;
+          }
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //选择主题的时候查询---详情---工程变更
+    getInforByTitle(id){
+      this.Request(GetChangeInfo({id:id})).then(res=>{
+        console.log(res);
+        if(res.StatusCode=='200'){
+          this.codeValue=res.Result.Code;//工程变更的编码
+
+          this.typeValue=res.Result.TypeName; // 变更类型
+          this.typeValue_id=res.Result.Type;//变更类型-id
+
+          this.operationCategory=res.Result.Building;//显示的楼栋名称
+          this.projectGlass=res.Result.Building; //要传的楼栋id
+
+          this.majorValue=res.Result.Specialty; //显示的专业
+          this.majorValue_id=res.Result.Specialty; //专业id
+
+          this.levelValue=res.Result.Floor; //显示的楼层
+          this.levelValue_id=res.Result.Floor; //要传的楼栋id
+
+          this.positionValue=res.Result.DetailPoint; //详细位置
+
+          this.peopleValue=res.Result.StartPersonName;//发起人
+          this.peopleId=res.Result.StartPerson;//发起人id 
+          this.changeContentValue=res.Result.Content;//变更内容  dCreateTime
+          this.UpDataValue=(res.Result.dCreateTime==null || res.Result.dCreateTime=='')?'':res.Result.dCreateTime.split('T')[0];//发起时间
+
+          this.buyThingTable=res.Result.listElementList;//表格
+
+          this.flowData=res.Result.listFlow;//工作流程
+          this.photoShow=res.Result.listFile;//显示图片
+
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //QueryPurchaseInfoItems 获取采购详情
+    purchaseInfor(id){
+      this.Request(QueryPurchaseInfoItems({ID:id,ProjectId:localStorage.getItem('projectid'),BuildName:'',Specialty:'',Floor:''})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.getPeople=res.Result.ApplyPersonName;//发起人
+          this.getPeopleId=res.Result.ApplyPerson;//发起人id 
+          this.UpDataValue=(res.Result.dCreateTime==null || res.Result.dCreateTime=='')?'':res.Result.dCreateTime.split('T')[0];//发起时间
+          this.lastData=(res.Result.DemandTime==null || res.Result.DemandTime=='')?'':res.Result.DemandTime.split('T')[0];//需用时间
+          // listElement
+          this.buyThingTable=res.Result.listElement;
+          this.flowData=res.Result.listFlow;
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    //获取沟通详情
+    GetMessage(id){
+      this.Request(GetDetail({communicateId:id})).then(res=>{
+        if(res.StatusCode=='200'){
+          this.flowData=res.Detiel[0].listFlow;//工作流程
+          this.photoShow=res.Detiel[0].PhotoList;//展示图片
+          this.gt_describeValue=res.Detiel[0].Communicate.Description;//描述
+
+          this.typeValue_id= res.Detiel[0].Communicate.ComType;//类型id
+          console.log('this.typeValue_id',this.typeValue_id);
+
+          this.operationCategory=res.Detiel[0].Communicate.BuildName;//显示的楼栋名称
+          this.projectGlass=res.Detiel[0].Communicate.BuildName; //要传的楼栋id
+
+          this.majorValue=res.Detiel[0].Communicate.Specialty; //显示的专业
+          this.majorValue_id=res.Detiel[0].Communicate.Specialty; //专业id
+
+          this.levelValue=res.Detiel[0].Communicate.Floor; //显示的楼层
+          this.levelValue_id=res.Detiel[0].Communicate.Floor; //要传的楼栋id
+
+          this.positionValue=res.Detiel[0].Communicate.DetailPoint; //详细位置
+
+          // this.Request(GetDictInfoList({projectId:localStorage.getItem('projectid'),DICode:'沟通类型'})).then(all=>{
+          //   if(all.StatusCode=='200'){
+          //     var text=all.Detiel.filter(i=>i.ID==this.typeValue_id)
+          //     // item => item.num===2 
+          //     console.log('text',text);
+          //     this.typeValue=text.cDIName;
+          //   }
+          // })
+          this.$forceUpdate();
+
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      });
+    },
+    //GetRiskInfoByID 日常巡检详情
+    GetRisk(id){
+      this.Request(GetRiskInfoByID({riskID:id})).then(res=>{
+        if(res.StatusCode=='200'){
+            this.titleId=res.Detiel[0].Risk.ID;
+            this.typeValue=res.Detiel[0].Risk.ProblemType;//显示问题类型
+            this.photoShow=res.Detiel[0].PhotoList;//显示照片
+            this.peopleValue=res.Detiel[0].Risk.InitiatorName;//发起人
+            this.UpDataValue=res.Detiel[0].Risk.InitiateTime.split('T')[0];//发起时间
+            this.rc_describeValue=res.Detiel[0].Risk.Problem;//变更内容
+            this.lastData= res.Detiel[0].Risk.DeadLine.split('T')[0];//整改时间
+            var text=res.Detiel[0].ReceiverList.filter(i=>i.UserID==localStorage.getItem('userId'))
+            
+            this.userAll=text;//提交的时候，登陆者的个人信息
+
+            var text=[];
+            for(var i=0;i<res.Detiel[0].ReceiverList.length;i++){
+              text.push(res.Detiel[0].ReceiverList[i].cName)
+            }
+            this.rc_receiveValue= text.join(',');   //接收人
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+    // 日常巡检的时候点击确定
+    sumbitAll(){
+      if(this.isRadio==3){
+        this.doThree();
+      }
+    },
+    //日常巡检的时候点击确定
+    doThree(){
+      if(this.titleId==''){
+         this.$dialog.alert({message:'请先选择主题'});
+         return false;
+      }
+      var post={
+        AuthFiles:[],
+        Risk:{id: this.titleId},
+        Receiver: {ID: this.userAll[0].ID, Status: this.userAll[0].Status, AuthTime: this.userAll[0].AuthTime.split('T')[0]}
+      };
+      this.Request(DoRiskWork(post)).then(res=>{
+        if(res.StatusCode=='200'){
+          this.$dialog.alert({message:res.Message});
+        }else{
+          this.$dialog.alert({message:res.Message});
+        }
+      })
+    },
+
+
+
+
+
+  }
+};
+</script>
+<style >
+.container-abarbeitung .p15 .van-cell .van-cell__title {
+  max-width: 1.7rem;
+}
+
+/* 表格样式更改 */
+.container-abarbeitung .materials_table .el-table .cell {
+  height: 0.78rem;
+  line-height: 0.78rem;
+  font-size: 30px;
+}
+.container-abarbeitung .materials_table .el-table .table_input {
+  border: 0.04rem solid #eeeeee;
+}
+.container-abarbeitung .materials_table_largin .el-table .cell {
+  height: 0.78rem;
+  line-height: 0.78rem;
+  font-size: 30px;
+}
+.container-abarbeitung .materials_table_largin .el-table .table_input {
+  border: 0.04rem solid #eeeeee;
+}
+.container-abarbeitung .materials_table_largin {
+  width: 100%;
+  overflow: scroll;
+}
+.container-abarbeitung  .van-field__control:disabled{
+  color:#333333;
+}
+.container-abarbeitung .receiver.van-actionsheet{
+  max-height: 50%;
+}
+/* .container-abarbeitung .van-checkbox-group .van-cell__title{
+  padding-left:20px;
+} */
+.container-abarbeitung .van-cell .van-checkbox__icon  .van-icon{
+    height: 40px;
+    width: 40px;
+    text-align: center;
+    line-height: 40px;
+    margin-right: 20px;
+}
+</style>
+
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+@import './user_assets/base.css';
+
+.mt20 {
+  margin-top: 0.27rem;
+}
+
+.container-abarbeitung {
+  width: 100%;
+  height: 100%;
+  background: rgba(246, 248, 250, 1);
+
+  .m20 {
+    margin: 0 0.32rem;
+  }
+
+  .p15 {
+    padding: 0.4rem 0.32rem !important;
+  }
+
+  .btn-warp {
+    padding: 0.4rem 0.32rem;
+    background: rgba(246, 248, 250, 1);
+  }
+
+  .group-warp {
+    padding: 0 0.32rem;
+
+    .item-s-b {
+      height: 1.18rem;
+      line-height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(51, 51, 51, 1);
+      border-bottom: 0.017rem solid #E5E5E5;
+    }
+  }
+
+  .content {
+    background-color: #fff;
+
+    .abarbeitung-content-radio {
+      margin: 0 0.32rem;
+      border-bottom: 0.017rem solid #e5e5e5;
+      height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(51, 51, 51, 1);
+      overflow-x:scroll;
+
+      .abarbeitung-content-radio-l {
+        width: 1.2rem;
+        display:inherit;
+      }
+
+      .abarbeitung-content-radio-r {
+        flex: 1;
+      }
+
+      .van-radio {
+        overflow: visible;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+
+        .van-radio__icon {
+          img {
+            width: 30px;
+            height: 30px;
+            display: block;
+          }
+        }
+      }
+    }
+
+    .flow-content {
+      padding: 0 0.32rem;
+      background: rgba(246, 248, 250, 1);
+
+      .flow-content-item {
+        padding-top: 0.4rem;
+        display: flex;
+
+        .action-a {
+          background: rgba(221, 221, 221, 1);
+        }
+
+        .action-b {
+          background: rgba(90, 147, 255, 1);
+        }
+
+        .flow-content-item-l {
+          width: 0.53rem;
+          height: 0.53rem;
+          border-radius: 50%;
+          font-size: 30px;
+          font-family: SourceHanSansCN-Medium;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 1);
+          position: relative;
+          margin-right: 0.55rem;
+          margin-top: 0.33rem;
+
+          .line {
+            position: absolute;
+            width: 0.05rem;
+            background-color: #979797;
+            top: 0.64rem;
+            left: 0.23rem;
+          }
+
+          .line-a {
+            height: 0.83rem;
+          }
+
+          .line-b {
+            height: 4.5rem;
+          }
+        }
+
+        .flow-content-item-c {
+          flex: 1;
+          font-size: 30px;
+          font-family: SourceHanSansCN-Medium;
+          font-weight: 500;
+          color: rgba(51, 51, 51, 1);
+          background: rgba(255, 255, 255, 1);
+          box-shadow: 0px 0.0133rem 0.11rem 0px rgba(220, 226, 237, 1);
+          border-radius: 0.0532rem;
+          position: relative;
+
+          .flow-content-item-c-w {
+            height: 1.18rem;
+          }
+
+          .flow-content-item-c-pic {
+            padding-bottom: 0.27rem;
+
+            .pic-warp {
+              width: 6.69rem;
+              height: 3.86rem;
+              background: rgba(238, 238, 238, 1);
+
+              img {
+                width: 0.67rem;
+                height: 0.67rem;
+                display: block;
+              }
+            }
+
+            img {
+              width: 6.69rem;
+              height: 3.86rem;
+              display: block;
+            }
+          }
+
+          .flow-content-item-c-triangle {
+            top: 0;
+            left: -0.3rem;
+            position: absolute;
+            height: 1.18rem;
+            width: 0.3rem;
+            overflow: hidden;
+
+            .flow-content-item-c-triangle-b {
+              position: absolute;
+              transform: rotate(45deg) !important;
+              -ms-transform: rotate(45deg) !important;
+              -moz-transform: rotate(45deg) !important;
+              -webkit-transform: rotate(45deg) !important;
+              -o-transform: rotate(45deg) !important;
+              background: rgba(255, 255, 255, 1);
+              box-shadow: 0px 1px 4px 0px rgba(220, 226, 237, 1);
+              height: 0.4rem;
+              width: 0.4rem;
+              top: 0.39rem;
+              left: 0.15rem;
+            }
+          }
+
+          .flow-content-item-c-l {
+            flex: 1;
+          }
+
+          .flow-content-item-border {
+            border-right: 0.03rem dashed #979797;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+          }
+        }
+
+        .flow-content-item-r {
+          margin-left: 1.06rem;
+        }
+      }
+    }
+
+    .van-cell {
+      padding: 0;
+    }
+
+    .uploader {
+      background-color: rgba(246, 248, 250, 1);
+      padding: 0 0.32rem;
+
+      .van-uploader {
+        width: 2.66rem;
+        height: 2.66rem;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 0.11rem;
+        border: 0.027rem solid rgba(189, 193, 198, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.266rem;
+        overflow: hidden;
+
+        img {
+          width: 2.66rem;
+          height: 2.66rem;
+          display: block;
+        }
+      }
+
+      .uploader-tip {
+        font-size: 26px;
+        font-family: SourceHanSansCN-Regular;
+        font-weight: 400;
+        color: rgba(153, 153, 153, 1);
+        align-self: flex-end;
+        margin-left: 0.16rem;
+      }
+    }
+
+    .abarbeitung-type-arrow img {
+      width: 0.24rem;
+      height: 0.43rem;
+      display: block;
+    }
+
+    .flow-work {
+      font-size: 26px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(153, 153, 153, 1);
+      height: 2.13rem;
+      background: rgba(255, 255, 255, 1);
+      padding: 0 0.32rem;
+
+      img {
+        width: 0.8rem;
+        height: 0.76rem;
+        display: block;
+        margin-bottom: 0.16rem;
+      }
+    }
+
+    .van-button--primary {
+      height: 1.18rem;
+      background: rgba(90, 147, 255, 1);
+      border-radius: 0.15rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Medium;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 1);
+    }
+
+    .item-s {
+      height: 1.18rem;
+      line-height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(51, 51, 51, 1);
+      border-bottom: 0.017rem solid #E5E5E5;
+      margin: 0 0.32rem;
+    }
+
+    .project-title {
+      font-size: 30px;
+      font-family: SourceHanSansCN-Medium;
+      font-weight: 500;
+      color: rgba(51, 51, 51, 1);
+      height: 1.18rem;
+      padding: 0 0.32rem;
+      background-color: rgba(246, 248, 250, 1);
+    }
+
+    .project-title-r {
+      height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(90, 146, 255, 1);
+      line-height: 1.18rem;
+    }
+
+    .project-content {
+      background-color: #fff;
+    }
+  }
+
+  .text-font-have {
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+  }
+
+  .text-font-none {
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .van-popup .van-actionsheet__item {
+    height: 1.18rem !important;
+    line-height: 1.18rem !important;
+    font-size: 30px;
+  }
+}
+</style>
+
+<style>
+.container-abarbeitung .van-cell .van-icon {
+  font-size: 34px;
+}
+.container-abarbeitung .van-cell{
+  line-height: 1.18rem;
+  font-size: 0.4rem;
+  padding-left: 20px;
+}
+.container-abarbeitung  .van-field__label,
+.container-abarbeitung .phoneNumber .van-field__label {
+  max-width: 180px;
+}
+.container-abarbeitung .realNameCard .van-field__label {
+  max-width: 180px;
+}
+.container-abarbeitung .company .van-field__label,
+.container-abarbeitung .payCard .van-field__label,
+.container-abarbeitung .guardCard .van-field__label,
+.container-abarbeitung .operationCategory .van-field__label,
+.container-abarbeitung .beginTime .van-field__label,
+.container-abarbeitung .endTime .van-field__label {
+  max-width: 150px;
+}
+.container-abarbeitung .laborContractState .van-field__label{
+  max-width: 270px;
+}
+.container-abarbeitung .safetyTrainingState .van-field__label,
+.container-abarbeitung .certificationDate .van-field__label{
+  max-width: 210px;
+}
+.container-abarbeitung .workPermitNum .van-field__label{
+  max-width: 240px;
+}
+/* Popup begin */
+.iPopup .van-picker-column {
+  font-size: 30px;
+}
+.iPopup .van-picker__cancel,
+.iPopup .van-picker__confirm,
+.iPopup .van-picker__title {
+  font-size: 30px;
+}
+.iPopup .van-picker__toolbar {
+  height: 88px;
+  line-height: 88px;
+}
+/* Popup end */
+.container-manpower .van-cell .van-field__label span{
+  font-weight: 600;
+}
+.container-abarbeitung .van-radio .van-radio__label{
+  width:170px;
+}
+</style>

@@ -1,0 +1,314 @@
+<!-- 问题类型分析 -->
+<template>
+  <div class="container-problem-analysis">
+    <!-- 头部 -->
+    <van-nav-bar title="问题类型分析" @click-left="goBack" fixed :border="false" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="wrapper">
+      <el-dropdown trigger="click">
+        <span class="el-dropdown-link">
+          <img src="../../../assets/imgs/storied_building.png" alt>
+          楼栋
+          <i class="el-icon-arrow-down el-icon--right"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item>整体</el-dropdown-item>
+          <el-dropdown-item>A1</el-dropdown-item>
+          <el-dropdown-item>A2</el-dropdown-item>
+          <el-dropdown-item>A3</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <div class="cumulative">
+        <span class="start active">开工累计</span>
+        <span class="year" @click="actionsheetYear">年</span>
+        <span class="month" @click="actionsheetMonth">月</span>
+        <span class="week" @click="actionsheetWeek">周</span>
+      </div>
+      <div class="my_echarts">
+        <div ref="myChartBar" class="chart_bar"></div>
+      </div>
+    </div>
+    <van-actionsheet v-model="showYear">
+      <van-picker show-toolbar :columns="columnsYear" @cancel="onCancel" @confirm="onConfirm"/>
+    </van-actionsheet>
+    <van-actionsheet v-model="showMonth">
+      <van-datetime-picker
+        v-model="currentMonth"
+        type="year-month"
+        :max-date="maxDate"
+        :formatter="formatter"
+      />
+    </van-actionsheet>
+    <van-actionsheet v-model="showWeek">
+      <div class="block">
+        <!-- <span class="demonstration">周</span> -->
+        <el-date-picker v-model="currentWeek" type="week" format="yyyy 第 WW 周" placeholder="选择周"></el-date-picker>
+      </div>
+    </van-actionsheet>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import echarts from "echarts";
+export default {
+  data() {
+    return {
+      showYear: false, //上拉框默认隐藏(年)
+      showMonth: false, //上拉框默认隐藏(月)
+      showWeek: false,//上拉框默认隐藏(周)
+      columnsYear: ["2015年", "2016年", "2017年", "2018年", "2019年"], //时间选择年
+      currentMonth: new Date(), //时间选择月
+      currentWeek: new Date(), // 时间选择周
+      maxDate: new Date(), //最大选择时间
+      barData: [4400, 4200, 3100, 2142, 1218, 581, 431, 383, 263],
+      category: [
+        "基础施工",
+        "脚手架工程",
+        "基础施工",
+        "脚手架工程",
+        "基础施工",
+        "脚手架工程",
+        "基础施工",
+        "脚手架工程",
+        "基础施工"
+      ]
+    };
+  },
+  mounted() {
+    this.barChart();
+  },
+  methods: {
+    //返回
+    goBack() {
+      this.$router.push({ path: "/Risk" });
+    },
+    //点击年月周显示弹窗
+    actionsheetYear() {
+      this.showYear = true;
+    },
+    actionsheetMonth() {
+      this.showMonth = true;
+    },
+    actionsheetWeek() {
+      this.showWeek = true;
+    },
+    //对选项文字进行处理
+    formatter(type, value) {
+      if (type === "year") {
+        return `${value}年`;
+      } else if (type === "month") {
+        return `${value}月`;
+      }
+      return value;
+    },
+    //时间选择确定取消
+    onConfirm(value, index) {
+      console.log(`当前值：${value}, 当前索引：${index}`);
+      this.showYear = false;
+      this.showMonth = false;
+      this.showWeek = false;
+    },
+    onCancel() {
+      console.log("取消");
+      this.showYear = false;
+      this.showMonth = false;
+      this.showWeek = false;
+    },
+    //echart横向柱状图
+    barChart() {
+      var myChart = echarts.init(this.$refs.myChartBar);
+      //初始化数据
+      var option = {
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow"
+          }
+        },
+        grid: {
+          left: "3%",
+          right: "4%",
+          top: "1%",
+          containLabel: true
+        },
+        xAxis: {
+          type: "value",
+          show: false,
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          splitLine: {
+            show: false
+          }
+        },
+        yAxis: {
+          type: "category",
+          data: this.category,
+          splitLine: { show: false },
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          offset: 10,
+          nameTextStyle: {
+            fontSize: 24
+          }
+        },
+        series: [
+          {
+            name: "数量",
+            type: "bar",
+            data: this.barData,
+            barWidth: 16,
+            barGap: 10,
+            smooth: true,
+            label: {
+              normal: {
+                show: true,
+                position: "right",
+                offset: [5, -2],
+                textStyle: {
+                  color: "#F68300",
+                  fontSize: 13
+                }
+              }
+            },
+            itemStyle: {
+              emphasis: {
+                barBorderRadius: 7
+              },
+              normal: {
+                barBorderRadius: 7,
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  { offset: 0, color: "#3977E6" },
+                  { offset: 1, color: "#37BBF8" }
+                ])
+              }
+            }
+          }
+        ]
+      };
+      myChart.setOption(option);
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-problem-analysis
+  width 100%
+  height 100%
+  background-color #fff
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    background-color #5892FF
+    .fontsize
+      font-size 42px
+      color #fff
+      display inline-block
+      vertical-align middle
+    .speed_of_progress
+      width 36px
+      height 36px
+  .wrapper
+    margin-top 88px
+    .cumulative
+      width 100%
+      height 100px
+      line-height 60px
+      box-sizing border-box
+      padding 20px 36px
+      text-align center
+      color #4E8CF5
+      display flex
+      span
+        flex 1
+        border 1px solid #BDC1C6
+      .year, .month, .week
+        border-left 0
+      .active
+        background-color #4E8CF5
+        color #fff
+    .my_echarts
+      padding 20px 30px 0
+      .chart_bar
+        width 700px
+        height 1000px
+</style>
+<style>
+/* 顶部表头 */
+.container-problem-analysis .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+  color: #fff;
+}
+/*下拉菜单*/
+.container-problem-analysis .el-dropdown {
+  display: inline-block;
+  height: 60px;
+  line-height: 60px;
+}
+.container-problem-analysis .el-dropdown .el-dropdown-link {
+  margin-left: 24px;
+  font-size: 28px;
+}
+.container-problem-analysis .el-dropdown .el-dropdown-link img {
+  width: 30px;
+  height: 30px;
+}
+.el-dropdown-menu {
+  background-color: #222832;
+  opacity: 0.9;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  border: 0;
+}
+.el-dropdown-menu__item {
+  color: #fff;
+  width: 140px;
+  line-height: 85px;
+  text-align: center;
+  border-bottom: 1px solid #737577;
+}
+.container-problem-analysis .van-picker {
+  font-size: 28px;
+}
+.container-problem-analysis .van-picker__toolbar {
+  height: 82px;
+  line-height: 82px;
+}
+.container-problem-analysis .block {
+  line-height: 88px;
+  text-align: center;
+}
+.container-problem-analysis .el-input__inner {
+  font-size: 24px;
+  color: #333;
+}
+.container-problem-analysis .el-input__prefix {
+  width: 20px;
+  height: 20px;
+  /* line-height: 20px; */
+}
+.el-date-picker .el-date-table td span {
+  width: 35px;
+  height: 35px;
+  line-height: 36px;
+}
+.el-date-picker .el-date-table td, .el-date-picker .el-date-table td div {
+  height: 35px;
+}
+.el-picker-panel {
+  width: 100%;
+}
+div.el-date-picker div.el-picker-panel__content {
+  width: 96%;
+}
+</style>

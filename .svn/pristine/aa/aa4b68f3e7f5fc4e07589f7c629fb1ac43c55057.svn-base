@@ -1,0 +1,64 @@
+// 接口
+import http from './request.js'
+
+// //登录接口
+export const Login = params => {
+  return http.fetchPost('Home/Login', params)
+}
+//获取当前登录用户详情接口
+export const GetLoginUserInfo = params => {
+  return http.fetchGet('User/GetLoginUserInfo', params)
+}
+
+
+/**
+ * 动态
+ */
+//建造动态（APP） 卡片列表
+export const GetConstruction = params => {
+  return http.fetchGet('SchedulePlan/GetConstruction', params)
+}
+//根据项目id和楼栋名称获取任务列表（APP）
+export const GetTaskList = params => {
+  return http.fetchGet('SchedulePlan/GetTaskList', params)
+}
+
+
+//获取所有人员信息
+// export const GetAllUserList = params => {
+//   return http.fetchGet('User/GetAllUserList', params)
+// }
+// //登录接口
+// export const Login = params => {
+//   return http.fetchPost('Home/Login', params)
+// }
+// // 根据（质量，安全，进度）动态ID删除动态表及动态照片表记录 ids
+// export const DeleteById = params => {
+//   return http.fetchPostGet('Dynamic/DeleteById', params)
+// }
+// //文件上传
+// export const UploadFiles = params => {
+//   return http.formDataUpLoad('File/UploadAndSaveMyFile', params)
+// }
+
+
+// 侧边栏数据
+//根据用户id获取角色
+export const GetUserRoleByUID = params => {
+  return http.fetchGet('User/GetUserRoleByUID', params)
+}
+//GetOrgList 根据项目获取公司列表
+export const GetOrgList = params => {
+  return http.fetchGet('Org/GetOrgList', params)
+}
+//GetEngingConfigByTypeId 获取信息配置
+export const GetEngingConfigByTypeId = params => {
+  return http.fetchGet('EngingConfig/GetEngingConfigByTypeId', params)
+}
+
+
+//单位通讯录
+//GetPositionConfig 根据公司id 获取公司的人员信息
+export const GetPositionConfig = params => {
+  return http.fetchGet('User/GetPositionConfig', params)
+}

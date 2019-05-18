@@ -1,0 +1,265 @@
+<!-- Progress进度认证 -->
+<template>
+  <div class="container-progress">
+    <van-nav-bar title="进度认证"  @click-left="goBack">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+
+    <div class="wrapper">
+      <van-cell-group>
+        <van-field
+          placeholder="请选择楼栋"
+          label="楼栋："
+          right-icon="arrow"
+          disabled
+          v-model="floor"
+          @click-right-icon="choiceFloor"
+        />
+      </van-cell-group>
+
+      <van-cell-group class="task">
+        <van-field
+          placeholder="作业任务"
+          label="作业任务："
+          right-icon="arrow"
+          disabled
+          v-model="task"
+          @click-right-icon="choiceTask"
+        />
+      </van-cell-group>
+
+      <van-cell-group class="schedule">
+        <van-field placeholder="请输入进度百分比" label="任务进度：" v-model="schedule"/>
+      </van-cell-group>
+
+      <van-cell-group>
+        <van-field
+          v-model="describe"
+          label="描述："
+          type="textarea"
+          placeholder="请输入问题描述"
+          rows="3"
+          autosize
+        />
+      </van-cell-group>
+    </div>
+
+    <van-popup v-model="floor_show" position="bottom" :close-on-click-overlay="true" class="iPopup">
+      <van-picker
+        show-toolbar
+        title="楼栋"
+        :columns="floor_columns"
+        @cancel="onFloorCancel"
+        @confirm="onFloorConfirm"
+      />
+    </van-popup>
+
+    <van-popup v-model="task_show" position="bottom" class="iPopup">
+      <van-picker
+        show-toolbar
+        title="作业任务"
+        :columns="task_columns"
+        @cancel="onTaskCancel"
+        @confirm="onTaskConfirm"
+      />
+    </van-popup>
+
+    <div class="wrapper-upload">
+      <div class="upload-title">上传照片</div>
+      <div class="upload-file">
+        <van-uploader :after-read="onRead" class="upload-file-box">
+          <van-icon name="plus"/>
+        </van-uploader>
+        <span class="upload-txt">最多上传2张</span>
+      </div>
+    </div>
+
+    <van-row class="progress-btn">
+      <van-col span="22" offset="1">
+        <van-button type="info" size="large">确认</van-button>
+      </van-col>
+    </van-row>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      data: "Progress进度认证",
+      dialogImageUrl: "",
+      dialogVisible: false,
+      floor_show: false,
+      task_show: false,
+      floor_columns: ["1栋1楼", "1栋2楼", "2栋10楼", "8栋14楼", "8栋5楼"],
+      task_columns: ["1栋1楼", "1栋2楼", "2栋10楼", "8栋14楼", "8栋5楼"],
+      floor: "",
+      task: "",
+      schedule: "",
+      describe: ""
+    };
+  },
+  methods: {
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
+    },
+    /**
+     * van-popup  显示/隐藏操作
+     */
+    choiceFloor() {
+      if (!this.floor_show) {
+        this.floor_show = true;
+      } else {
+        this.floor_show = false;
+      }
+    },
+    choiceTask() {
+      if (!this.task_show) {
+        this.task_show = true;
+      } else {
+        this.task_show = false;
+      }
+    },
+    /**
+     * 选择楼栋
+     */
+    onFloorConfirm(value) {
+      // Toast(`当前值：${value}, 当前索引：${index}`);
+      // this.$toast(`当前值：${value}, 当前索引：${index}`);
+      this.floor = value;
+      this.floor_show = false;
+    },
+    onFloorCancel() {
+      this.floor_show = false;
+    },
+    /**
+     * 选择作业任务
+     */
+    onTaskConfirm(value) {
+      this.task = value;
+      this.task_show = false;
+    },
+    onTaskCancel() {
+      this.task_show = false;
+    },
+    onRead(file) {
+      console.log(file);
+    },
+    goBack(){
+        this.$router.push({ path: "/nav/to/index" });
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-progress {
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+
+<style>
+.container-progress .wrapper .task .van-field__label,
+.container-progress .wrapper .schedule .van-field__label {
+  max-width: 150px;
+}
+.container-progress .wrapper .van-field__right-icon .van-icon,
+.upload-file-box .van-icon {
+  font-size: 36px;
+}
+
+/* Popup begin */
+.iPopup .van-picker-column {
+  font-size: 30px;
+}
+.iPopup .van-picker__cancel,
+.iPopup .van-picker__confirm,
+.iPopup .van-picker__title {
+  font-size: 30px;
+}
+.iPopup .van-picker__toolbar {
+  height: 88px;
+  line-height: 88px;
+}
+/* Popup end */
+.container-progress .van-cell .van-field__label span{
+  font-weight: 600;
+}
+</style>
+
+<style scoped>
+.container-progress .van-nav-bar {
+  height: 88px;
+  line-height: 88px;
+}
+.container-progress .van-nav-bar__title {
+  font-size: 36px;
+}
+.container-progress .van-nav-bar__left,
+.container-progress .van-nav-bar__right {
+  font-size: 42px;
+}
+.container-progress .wrapper .van-cell {
+  font-size: 30px;
+  line-height: 88px;
+}
+.container-progress .wrapper .van-hairline--top-bottom::after {
+  left: -330px;
+  right: -330px;
+}
+.wrapper-upload {
+  padding: 20px;
+}
+.upload-txt {
+  color: #999999;
+  font-size: 26px;
+  margin-left: 10px;
+}
+.upload-title {
+  font-size: 30px;
+  font-weight: 600;
+  padding: 20px 0;
+}
+.upload-file {
+  display: -webkit-flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+.upload-file-box {
+  width: 200px;
+  height: 200px;
+  border: 1px lightgray dashed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.progress-btn {
+  margin-top: 100px;
+}
+.progress-btn .van-button--large {
+  height: 88px;
+  line-height: 88px;
+  border-radius: 10px;
+}
+.progress-btn .van-button--large .van-button__text {
+  font-size: 30px;
+}
+</style>
+
+<style>
+/* 顶部表头 */
+  .container-progress .van-nav-bar .van-nav-bar__title {
+    font-size: 36px;
+    font-weight: 600;
+  }
+  .container-progress  .van-nav-bar {
+    height: 88px;
+    line-height: 88px;
+  }
+</style>

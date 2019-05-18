@@ -1,0 +1,94 @@
+.flex-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-around {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-end {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+}
+
+.flex-column-between {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.flex-column-around {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.flex-column-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.flex-column-center-b {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 滚动条的宽度 */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+}
+
+/* 滚动条的滑块 */
+
+::-webkit-scrollbar-thumb {
+    background-color: #a1a3a9;
+    border-radius: 6px;
+}
+
+/* navbar */
+
+.van-nav-bar {
+    height: 88px;
+}
+
+.van-nav-bar__title {
+    height: 88px;
+    line-height: 88px;
+    font-size: 36px;
+    font-family: PingFang-SC-Medium;
+    /* font-weight: bold; */
+    color: rgba(51, 51, 51, 1);
+}
+
+.van-nav-bar .van-icon {
+    font-size: 44px;
+    color: #333333;
+    vertical-align: initial;
+    padding: 20px 40px 20px 0
+}
+
+.van-nav-bar .van-nav-bar__title {
+    font-size: 36px;
+}

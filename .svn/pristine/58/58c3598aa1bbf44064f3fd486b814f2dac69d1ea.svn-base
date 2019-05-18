@@ -1,0 +1,696 @@
+<template>
+  <div class="container-dynamic-build" ref="totalHeight" @touchmove="handleScroll">
+    <!-- <vue-touch @swipeup='handleScroll(data)'> -->
+    <div class="title">
+      <span>建造动态</span>
+    </div>
+    <div class="message"  v-loading="isShowBuildLoading">
+      <div class="message-title">
+        <!-- <span>当前作业任务</span> -->
+      </div>
+      <div class="time-axis">
+        <!-- 轮播 -->
+        <div class="swiper-container"   v-show="isShowBuild">
+          <div class="swiper-wrapper" >
+
+
+
+              <!-- 建造动态 -->
+            <div class="swiper-slide"  v-for="building in buildingList" :key="building.index">
+              <div class="in-slide">
+                <div class="in-slide-up">
+                  <div class="in-slide-up-l">
+                    <p class="in-slide-up-l-title">进度总览（{{building.BuildingName}}）</p>
+                    <p class="in-slide-up-l-title-2">
+                      <span class="in-slide-title-2">任务总数：</span>
+                      <span class="in-slide-number">{{building.TaskCount}}</span>
+                    </p>
+                    <p class="in-slide-up-l-title-3">
+                      <span class="in-slide-title-2">正常：</span>
+                      <span class="in-slide-number">{{building.TaskNormal}}</span>
+                      <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;滞后：</span>
+                      <span class="in-slide-number">{{building.TaskLagging}}</span>
+                    </p>
+                  </div>
+                  <div class="in-slide-up-r">
+                    <div class="in-slide-up-r-img"></div>
+                  </div>
+                </div>
+
+                <div class="in-slide-down">
+                  <p class="in-slide-down-title">
+                    <span class="in-slide-title-2">班组数量：</span>
+                    <span class="in-slide-number">{{building.TeamCount}}</span>
+                    <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;班组人数：</span>
+                    <span class="in-slide-number">{{building.TeamNumber}}</span>
+                  </p>
+                </div>
+                <div class="in-slide-3-r">
+                  <span class="tomore" @click="toMore(building.BuildingName)">查看更多&nbsp;≫</span>
+                </div>
+              </div>
+            </div>
+
+             <!-- <div class="swiper-slide">
+              <div class="in-slide">
+                <div class="in-slide-up">
+                  <div class="in-slide-up-l">
+                    <p class="in-slide-up-l-title">当前作业任务</p>
+                    <p class="in-slide-up-l-title-2">
+                      <span class="in-slide-title-2">任务总数：</span>
+                      <span class="in-slide-number">{{leng}}</span>
+                    </p>
+                    <p class="in-slide-up-l-title-3">
+                      <span class="in-slide-title-2">正常：</span>
+                      <span class="in-slide-number">{{Normal}}</span>
+                      <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;滞后：</span>
+                      <span class="in-slide-number">{{lag}}</span>
+                    </p>
+                  </div>
+                  <div class="in-slide-up-r">
+                    <div class="in-slide-up-r-img"></div>
+                  </div>
+                </div>
+
+                <div class="in-slide-down">
+                  <p class="in-slide-down-title">
+                    <span class="in-slide-title-2">班组数量：</span>
+                    <span class="in-slide-number">{{curTaskList.classgroupCount}}</span>
+                    <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;班组人数：</span>
+                    <span class="in-slide-number">{{curTaskList.classmemberCount}}</span>
+                  </p>
+                </div>
+                <div class="in-slide-3-r">
+                  <span class="tomore" @click="toMore">查看更多&nbsp;≫</span>
+                </div>
+              </div>
+            </div>
+
+           
+
+            <div class="swiper-slide">
+              <div class="in-slide">
+                <div class="in-slide-up">
+                  <div class="in-slide-up-l">
+                    <p class="in-slide-up-l-title">当前作业任务</p>
+                    <p class="in-slide-up-l-title-2">
+                      <span class="in-slide-title-2">任务总数：</span>
+                      <span class="in-slide-number">{{leng}}</span>
+                    </p>
+                    <p class="in-slide-up-l-title-3">
+                      <span class="in-slide-title-2">正常：</span>
+                      <span class="in-slide-number">{{Normal}}</span>
+                      <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;滞后：</span>
+                      <span class="in-slide-number">{{lag}}</span>
+                    </p>
+                  </div>
+                  <div class="in-slide-up-r">
+                    <div class="in-slide-up-r-img"></div>
+                  </div>
+                </div>
+
+                <div class="in-slide-down">
+                  <p class="in-slide-down-title">
+                    <span class="in-slide-title-2">班组数量：</span>
+                    <span class="in-slide-number">{{curTaskList.classgroupCount}}</span>
+                    <span class="in-slide-title-2">&nbsp;&nbsp;&nbsp;班组人数：</span>
+                    <span class="in-slide-number">{{curTaskList.classmemberCount}}</span>
+                  </p>
+                </div>
+              </div>
+            </div> -->
+
+            
+
+            
+          </div>
+        </div>
+
+
+        <!-- 分页器 -->
+        <div class="pagination"  v-show="isShowBuild">
+          <div class="swiper-pagination"></div>
+        </div>
+
+        
+        <!-- 建造动态列表详情 -->
+        <div class="d-detail" v-show="!messageSwitch">
+          <p class="d-detail-p1">
+            <span class="d-detail-p1-title">当前作业任务列表</span>
+            <span class="d-line"></span>
+            <span class="d-btn" @click="toMore2">切换</span>
+          </p>
+          <!-- 状态表 -->
+          <div class="state-table">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+              <thead>
+                <tr class="thead-style">
+                  <th>任务名称</th>
+                  <th>计划完工时间</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody class="data-tb" v-if="curTaskList.length>0">
+                <tr v-for="items in curTaskList" :key="items.index">
+                  <td>{{items.TaskName}}</td>
+                  <td>{{items.BaseFinishTime.split('T')[0]}}</td>
+                  <td style="color:#1EFFB7" v-if="items.Status=='正常'">正常</td>
+                  <td style="color:#FF5150" v-else>滞后</td>
+                </tr>
+              </tbody>
+              <div class="defult-tb" v-else>
+                <p>暂无数据</p>
+              </div>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态 -->
+    <div v-if="list.length>0">
+      <div class="datas" v-for="item in list" :key="item.index">
+        <div class="datas-in">
+          <keep-alive>
+            <appraise
+              :name="item.PublishUserList[0].cUserName"
+              :iphoto="item.PublishUserList[0].PhotoPath"
+              :content="item.Dynamic.Problem"
+              :WorkArea="item.Dynamic.WorkArea"
+              :time="item.Dynamic.dCreateTime?item.Dynamic.dCreateTime.split('T')[0]:''"
+              :type="item.Dynamic.Type"
+              :part="item.Dynamic.Part"
+              :photolist="item.PhotoList"
+              :id="item.Dynamic.ID"
+              :likelist="item.LikeList"
+              :CurUserIsLiked="item.CurUserIsLike"
+              :pathImages="pathImages"
+            ></appraise>
+          </keep-alive>
+        </div>
+      </div>
+    </div>
+    <p class="defult-img" v-else>
+      <img src="./imgs/defult.jpg" alt=""><br/>
+      <span class="defult-title">暂无建造动态</span>
+    </p>
+    <!-- 底部导航 :likedanduser='islikedanduser[index]'-->
+    <!-- <div class="ifooter-placeholder"></div> -->
+    <!-- <div class="ifooter">
+      <ifooter/>
+    </div> -->
+    <!-- </vue-touch> -->
+  </div>
+</template>
+<script>
+import appraise from "./dynamic_components/appraise/appraise";
+import { GetConstruction, GetTaskList,QueryPublishList} from "../../api/api.js";
+// import { Message } from "element-ui";
+export default {
+  data() {
+    return {
+      ProjectID:localStorage.getItem('projectid'),
+      buildingList:[],//建筑列表 
+      curTaskList: [], //当前作业任务列表
+        // taskList:[
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        //   {Name:'aaaa',PlanEndTime:'2011-09-09T',Status:'正常'},
+        // ]
+      
+      leng:0,//长度
+      Normal:0,//正常数
+      lag:0,//滞后数
+      RiskLevel:'--',
+      ProjectPart:'--',
+      SourceName:'--',
+      CtrlMethod:'--',
+      name:'--',
+      PlanEndTime:'--',
+      Status:'--',
+      list: [], // 动态列表
+      now: "--", //今天的日期
+      islikedanduser: [], //每个动态的点赞用户和本人是否点赞
+      // CurUserIsLike:false,//本人是否已点赞
+      pageIndex: 1,
+      pageSize: 4,
+      flag: true, //禁上刷新时滑动
+      pathImages: [], //放大图片地址列表
+      messageSwitch: true, //切换上部分信息 0：轮播
+      isShowBuild:false,//是否显示卡片
+      isShowBuildLoading:true,//卡片加载中
+      initialSlide:0,//卡片索引
+      myswiper:{}
+    };
+  },
+  components: {
+    appraise
+  },
+  created() {
+    // this.load(); //调用加载中蒙层
+    // 页面tar状态
+    localStorage.setItem("index", 1);
+    this.getList();
+    
+  },
+  methods: {
+    async getList() {
+      //卡片列表
+      const list = await this.Request(GetConstruction({ProjectID:this.ProjectID}))
+      if(list.StatusCode===200){
+        this.buildingList = list.Detiel
+        this.$nextTick(() => {
+        this.myswiper =  new this.$Swiper(".swiper-container", {
+            effect: "coverflow",
+            coverflowEffect: {
+              rotate: 0,
+              stretch: 0,
+              depth: 100,
+              modifier: 3,
+              slideShadows: false
+            },
+            pagination: {
+              el: ".swiper-pagination",
+            }
+          });
+      });
+      }else{
+        this.buildingList = []
+      }
+      this.isShowBuild = true
+      this.isShowBuildLoading = false
+      
+      // 根据项目ID查询发布问题 动态列表
+      let params = {
+        ProjectID:localStorage.getItem('projectid'),
+        BuildName:this.buildingList[0].BuildingName,//默认第一个楼栋的动态
+        UserID:Number(localStorage.getItem('userId')),
+        page:1,
+        rows:5
+      }
+      this.queryPublishList(params)
+    },
+    /**
+     * 根据项目ID查询发布问题   动态列表
+     */
+    queryPublishList(params){
+      this.Request(QueryPublishList(params)).then(res=>{
+        console.log(res)
+      })
+    },
+    // 分页获取动态
+    async getScheduleList(pageIndex, pageSize) {
+      console.log(pageIndex, pageSize)
+      // this.load(); //调用加载中蒙层
+      // const ScheduleList = await this.Request(
+      //   GetList({ pageIndex, pageSize })
+      // );
+      // console.log(ScheduleList);
+      // if (ScheduleList.StatusCode == 300) {
+      //   this.$toast.clear(); // 清除蒙层
+      //   Message({ message: "加载失败", type: "error" });
+      // } else {
+      //   this.$toast.clear(); // 清除蒙层
+      //   console.log(JSON.stringify(ScheduleList.Detiel).length);
+      //   return ScheduleList.Detiel;
+      // }
+    },
+    async handleScroll(e) {
+      console.log(e);
+      // var scrollTop =
+      //   document.documentElement.scrollTop || document.body.scrollTop;
+      // if (typeof this.$refs.totalHeight.offsetHeight == undefined) {
+      //   return;
+      // }
+      // console.log("div高度", this.$refs.totalHeight.offsetHeight);
+      // console.log("屏幕距离顶部距离", scrollTop);
+      // console.log("屏幕高度：", Number(localStorage.getItem("screenHeight")));
+      // let pageTotalHeight = this.$refs.totalHeight.offsetHeight, //页面总高度
+      //   scrollTopDistance = scrollTop, //屏幕距离顶部距离
+      //   screenHeight = Number(localStorage.getItem("screenHeight")); // 屏幕实际高度
+      // if (scrollTopDistance + 60 >= pageTotalHeight - screenHeight) {
+      //   if (this.flag) {
+      //     this.flag = false;
+      //     console.log("刷新");
+      //     let l = await this.getScheduleList(this.pageIndex + 1, this.pageSize);
+      //     this.pageIndex++;
+      //     this.list.push(...l);
+      //     console.log("this.list", this.list);
+      //     // 刷新加载，重新
+      //     this.pathImages = []; //清空
+      //     this.list.forEach(i => {
+      //       i.PhotoList.forEach(j => {
+      //         console.log(j.Path);
+      //         this.pathImages.push(j.Path);
+      //       });
+      //     });
+
+      //     this.flag = true;
+      //   }
+      // }
+    },
+
+    // 切换信息页面
+    toMore(BuildingName) {
+      console.log("切换信息页面");
+      this.isShowBuildLoading = true
+      this.messageSwitch = !this.messageSwitch;
+      this.isShowBuild = !this.isShowBuild
+      // 根据项目id和楼栋名称获取任务列表（APP）
+      this.Request(GetTaskList({ProjectID:localStorage.getItem('projectid'),BuildingName})).then(res=>{
+        console.log(res)
+        if(res.StatusCode===200){
+          this.curTaskList = res.Detiel
+        }else{
+          this.$message({type:'error',message:'未获取数据',center:'true'})
+        }
+        this.isShowBuildLoading = false
+      })
+    },
+    // 切换信息页面
+    toMore2() {
+      console.log("切换信息页面");
+      this.messageSwitch = !this.messageSwitch;
+      this.isShowBuild = !this.isShowBuild
+      // this.mySwiper.pagination.update()
+    }
+  }
+};
+</script>
+<style lang="stylus" scoped>
+.container-dynamic-build
+  width 100%
+  background-color #F1F3F6
+  .title
+    width 100%
+    background-color white
+    height 80px
+    text-align center
+    color #333333
+    line-height 80px
+    font-size 36px
+  .message
+    background-color #2577E3
+    .message-title
+      width 100%
+      height 30px
+      text-align center
+      color white
+      line-height 60px
+      font-size 30px
+      font-weight 400
+    .time-axis
+      width 100%
+      height 366px
+      // overflow scroll
+      .swiper-slide
+        width: 750px !important;
+        height: 328px;
+        
+        .in-slide
+          position relative
+          width 580px
+          height 328px
+          margin 0 auto
+          background-color #FFFFFF
+          box-shadow:0px 14px 13px 0px rgba(0, 0, 0, 0.18);
+          border-radius:24px;
+          .in-slide-up
+            display flex
+            .in-slide-up-l
+              flex 1
+              padding-left 30px
+              padding-top 30px
+              border-bottom 1px solid #E5E5E5
+              
+              .in-slide-up-l-title-2
+                margin 30px 0
+                width 276px
+                padding-bottom 12px
+                border-bottom 1px solid #E5E5E5
+              .in-slide-up-l-title-3
+                padding-bottom 12px
+                
+            
+            .in-slide-up-r
+              width 190px
+              padding-top 23px
+              .in-slide-up-r-img
+                width 116px
+                height 127px
+                background-image url('./imgs/thumbnail.png')
+                background-repeat no-repeat
+                background-size:100% 100%;  
+          .in-slide-title-2
+            font-size:30px;
+            font-family:SourceHanSansCN-Regular;
+            font-weight:400;
+            color:rgba(51,51,51,1);
+          .in-slide-number
+            font-size:30px;
+            font-family:PingFang-SC-Heavy;
+            font-weight:800;
+            color:rgba(39,128,229,1);
+            line-height 30px
+          .in-slide-up-l-title
+            font-size:32px;
+            font-family:PingFang-SC-Bold;
+            font-weight:bold;
+            color:rgba(51,51,51,1);
+            line-height 32px
+          
+          .in-slide-down
+            padding-left 30px
+            .in-slide-down-title
+              margin-top 30px
+              
+          .mes
+            padding 30px 0 0 30px
+            .mes-p1
+              position relative
+              .level
+                display inline-block
+                position absolute
+                top -12px
+                right 0
+                width 200px
+                height 55px
+                .level-in
+                  display inline-block
+                  width 200px
+                  height 55px
+                  background-color #ffe3e3
+                  border-top-left-radius 50px
+                  border-bottom-left-radius 50px
+                  text-align center
+                  .level-t
+                    display inline-block
+                    font-size:30px;
+                    font-family:PingFang-SC-Medium;
+                    font-weight:500;
+                    color:rgba(51,51,51,1);
+                    line-height 30px
+                    padding  14px 0 0 10px
+            .mes-p2,.mes-p3,.mes-p4
+              padding-top 30px
+              padding-bottom 12px
+              border-bottom 1px solid #E5E5E5
+              width 520px
+
+          .in-slide-3
+            padding 30px 0 0 30px
+            display flex
+            .in-slide-3-l
+              flex 1
+              .m-1
+                span
+                  font-size:32px;
+                  font-family:PingFang-SC-Bold;
+                  font-weight:bold;
+                  color:rgba(51,51,51,1);
+                  line-height 32px
+              .m-2,.m-3,.m-4,.m-5
+                font-size:30px;
+                font-family:PingFang-SC-Medium;
+                color:rgba(51,51,51,1);
+                line-height 30px
+                margin-top 30px
+                .cent
+                  color #333333
+                  font-weight 700
+                .state
+                  display inline-block
+                  width 188px
+                  height 40px
+                  background:rgba(255,115,114,1);
+                  border-radius:10px;
+                  font-size:28px;
+                  font-family:PingFang-SC-Medium;
+                  font-weight:500;
+                  color:rgba(255,255,255,1);
+                  text-align center
+                  line-height 28px
+                  padding-top 6px
+          
+          .tomore
+            position absolute
+            right 34px
+            bottom 12px
+            font-size:30px;
+            white-space nowrap  
+            font-family:SourceHanSansCN-Regular;
+            font-weight:400;
+            color:rgba(100,147,247,1);  
+                    
+  .pagination
+    position relative
+    width 100%
+    height 40px      
+      
+  .d-detail
+    position relative
+    width 690px
+
+    margin 0 auto
+    top 0
+    .d-detail-p1
+      .d-detail-p1-title
+        font-size:30px;
+        font-family:PingFang-SC-Bold;
+        font-weight:bold;
+        color:rgba(43,66,96,1);
+        line-height 30px
+      .d-line
+        display inline-block
+        width 320px
+        height 2px
+        border-bottom 1px solid #80BDFC
+        margin 0 0 8px 8px
+      .d-btn
+        display inline-block
+        width 120px
+        height 58px
+        background:linear-gradient(33deg,rgba(46,185,236,1),rgba(41,134,231,1),rgba(52,124,211,1));
+        border-radius:29px;
+        font-size:30px;
+        font-family:PingFang-SC-Medium;
+        font-weight:500;
+        color:rgba(255,255,255,1);
+        line-height 58px
+        box-sizing border-box
+        // padding-top 24px
+        text-align center
+    .state-table
+      width 690px
+      margin 16px auto
+      height: 292px;
+      overflow: auto;
+      background:linear-gradient(-64deg,rgba(58,209,247,0.5),rgba(40,131,230,0.5));
+    .thead-style
+      
+      background-color rgba(255,255,255,0.38)
+      font-size:28px;
+      font-family:PingFang-SC-Medium;
+      font-weight:500;
+      color:rgba(255,255,255,1);
+      line-height 50px
+      height 50px
+      border none
+    .data-tb
+      tr
+        height 80px
+        text-align center
+        font-size:30px;
+        font-family:PingFang-SC-Medium;
+        font-weight:500;
+        color:rgba(255,255,255,1);
+        line-height 30px
+        padding-top 25px
+        td
+          border-bottom: 1px solid rgba(229,229,229,0.5)
+          line-height 80px
+    .defult-tb
+      position absolute
+      top 140px
+      width 100%
+      text-align center
+      color white
+      margin-top 20px
+      font-size 20px
+  
+  .datas
+    width 100%
+    margin-top 20px
+    .datas-in
+      width 100%
+      background-color white
+  .defult-img
+    width 100%
+    box-sizing border-box
+    padding-top 136px
+    text-align center
+    background-color: #f6f8fa;
+    img
+      display inline-block
+      width 350px
+      height 330px
+      margin 0 auto
+    .defult-title
+      text-align center
+      font-size:30px;
+      font-family:SourceHanSansCN-Regular;
+      font-weight:400;
+      color:rgba(172,178,190,1);
+      
+  .ifooter-placeholder
+    width 100%
+    height 120px
+  .ifooter
+    position fixed
+    bottom 0
+    left 0
+    width 100%
+    height 100px
+    background-color white
+</style>
+<style lang="stylus">
+.van-toast__text
+  white-space nowrap
+  display inline-block
+.van-toast
+  padding 0 120px
+.van-switch
+  width 90px
+  height 50px
+  border 1px solid #9e9e9e
+.van-switch__node
+  width 50px
+  height 50px
+</style>
+<style>
+[class*=" el-icon-"],
+[class^="el-icon-"] {
+  font-size: 30px;
+  color: #ff4350;
+}
+.message .swiper-pagination {
+  position: inherit;
+}
+.message .swiper-pagination-bullet-active {
+  background: #98c9ff !important;
+  width: 20px !important;
+  height: 10px !important;
+  border-radius: 5px !important;
+}
+.message .swiper-pagination-bullet {
+  background: #7db7f9;
+  opacity: 1;
+  margin-left: 16px;
+  width: 10px;
+  height: 10px;
+}
+</style>

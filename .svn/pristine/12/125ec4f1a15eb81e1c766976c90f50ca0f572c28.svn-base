@@ -1,0 +1,401 @@
+<!-- human resources 人力资源 -->
+<template>
+ <div class='human_resources' >
+    <div class='wrapper' id="hum_wrapper">
+        <!-- 头部 -->
+        <van-nav-bar
+            title="人力资源"
+            right-text="按钮"
+            left-arrow
+            @click-left="onClickLeft"
+            @click-right="onClickRight"
+        >
+        <div class="nav_right" slot="right"> <img src="../../../assets/imgs/screen.png" alt="" /> </div>
+        </van-nav-bar>
+        <!-- 人力资源列表 -->
+        <el-table
+            :data="purchase_tableData"
+            :header-row-style = "{'background-color': '#5A92FF', 'color': '#fff','height': '44px'}">
+            <el-table-column
+                prop="id"
+                label="序号"
+                width="50">
+            </el-table-column>
+            <el-table-column
+                prop="company_name"
+                label="所属公司">
+            </el-table-column>
+            <el-table-column
+                prop="team"
+                label="班组"
+                width="85">
+            </el-table-column>
+                <el-table-column
+                prop="tel_number"
+                label="手机号"
+                width="182">
+            </el-table-column>
+        </el-table>
+
+        <!-- 筛选内容 -->
+        <div class="select_layer" v-show="sel_show">
+        
+            <van-collapse v-model="activeNames" accordion>
+                <van-collapse-item title="木工班组（12）" name="1">
+                    <div slot="icon"><img class="icon_down" src="../../../assets/imgs/select_down.png"  /></div>
+                        <ul>
+                        <li>木工班组1</li>
+                        <li>木工班组2</li>
+                        <li>木工班组3</li>
+                        <li>木工班组4</li>
+                        <li>木工班组5</li>
+                        <li>木工班组6</li>
+                        <li>木工班组7</li>
+
+                    </ul>
+                </van-collapse-item>
+                <van-collapse-item title="水电班组（12）" name="2">
+                    <div slot="icon"><img class="icon_down" src="../../../assets/imgs/select_down.png"  /></div>
+                    <ul>
+                        <li>水电班组1</li>
+                        <li>水电班组2</li>
+                        <li>水电班组3</li>
+                        <li>水电班组4</li>
+                        <li>水电班组5</li>
+                        <li>水电班组6</li>
+                        <li>水电班组7</li>
+                        <li>水电班组8</li>
+                        <li>水电班组9</li>
+                    </ul>
+                </van-collapse-item>
+                <van-collapse-item title="机械班组（12）" name="3" >
+                    <div slot="icon"><img class="icon_down" src="../../../assets/imgs/select_down.png"  /></div>
+                    <ul>
+                        <li>机械班组1</li>
+                        <li>机械班组2</li>
+                        <li>机械班组3</li>
+                        <li>机械班组4</li>
+                    </ul>  
+                </van-collapse-item>
+                <van-collapse-item title="钢筋班组（12）" name="4" >
+                    <div slot="icon"><img class="icon_down" src="../../../assets/imgs/select_down.png"  /></div>
+                    <ul>
+                        <li>钢筋班组1</li>
+                        <li>钢筋班组2</li>
+                        <li>钢筋班组3</li>
+                    </ul>  
+                </van-collapse-item>
+            </van-collapse>
+            <div class="btn">
+                <button
+                class=" reset"
+                @click=" resetFunc"
+                > 重置</button>
+                <div class="line"></div>
+                <button
+                class=" check"
+                @click="recordCheck"
+                > 确认</button>
+            </div>
+        </div>
+    </div>
+ </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+ data() {
+   return {
+      sel_show: false,
+      active: 0,
+      activeNames: ['0'],
+        // 人力物资列表数据
+        purchase_tableData: [{
+            id: 1,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835',
+
+          }, {
+           id: 2,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          }, {
+            id: 3,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          }, {
+            id: 4,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          },{
+            id: 5,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          },{
+            id: 6,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          },{
+            id: 7,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          },{
+            id: 8,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          },{
+            id: 9,
+            company_name: '某某公司',
+            team: '班组一',
+            tel_number: '13975226835'
+          }]
+        }
+    },
+    methods: {
+         // 返回按钮
+     onClickLeft() {
+      this.$router.go(-1)
+
+    },
+    // 筛选按钮
+    onClickRight() {
+      this.sel_show = !this.sel_show;
+    },
+
+    // 重置函数 
+    resetFunc() {
+      console.log("chongzhi")
+      this.sel_show = false;
+    },
+    //确认函数 
+    recordCheck() {
+      console.log('queren')
+      this.sel_show = false;
+
+    },
+    // 表格合并单元格
+    arraySpanMethod({ columnIndex }) {
+       
+          if (columnIndex === 5) {
+            return [6, 1];
+          } else if (columnIndex === 4) {
+            return [6, 1];
+          }
+        }
+      }
+    
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.human_resources
+  width 100%
+  height 100%
+</style>
+<style lang="stylus" rel='stylesheet/stylus'>
+@import '../../../assets/stylus/variable'
+  #hum_wrapper {
+    //头部样式
+    .van-nav-bar {
+      width: 100%;  
+      height: 128px;
+      border-bottom: 1px solid #E5E5E5;
+
+      .van-nav-bar__title,
+      .van-nav-bar__left,
+      .van-nav-bar__right {
+        color: #000;
+        height: 87px;
+        padding-top: 41px;
+        line-height: 87px;
+        font-size $font-size-title;
+        z-index 10000;
+      }
+      .van-icon-arrow-left {
+        color: #000 ;
+        font-size $font-size-title;
+      }
+      .van-nav-bar__text {
+        color: #000;
+        font-size $font-size-title;
+      }
+      .nav_right {
+        img {
+            width: 41px;
+          height 35px;
+          
+        }
+      }
+    }
+    // 人力资源列表样式
+
+    .el-table {
+        .cell {
+            line-height 60px
+        }
+      .el-table__header-wrapper {
+        tr {
+          th {
+            background-color: #5A92FF
+            .cell {
+                height 100%;
+                line-height 60px;
+                text-align: center;
+                font-size: 30px;
+            }
+          }
+        }
+      }
+      .el-table__body-wrapper {
+        tr {
+            height 88px;
+          td {
+            height 88px;
+            font-size: 28px;
+            text-align: center;
+            color: #333;
+          }
+        }
+         //左上角图标样
+
+        tr:nth-child(2n+1):after {
+        display: inline-block;
+        content: '滞';
+        font-size: 20px;
+        padding 10px 0 0 10px;
+        width: 60px
+        height: 60px;
+        color: #fff;
+        background url('../../../assets/imgs/mark.png') center center no-repeat;
+        transform: translate(-1134%, 0)
+        }
+      }
+    }
+
+    // 筛选样式
+     .select_layer {
+      position: fixed;
+      top: 126px;
+      right: 24px;
+      width 352px;
+      box-sizing: border-box;
+      background:rgba(34,40,50,1)
+      border-radius:8px
+      padding 10px 20px;
+      z-index: 999
+        .van-hairline--top-bottom::after{
+          border: none;
+        }
+        .van-hairline--top::after {
+          border-top: none;
+          border-bottom: 1px solid #737577;
+        }
+        .van-collapse  {
+          max-height 909px;
+        }
+        .van-collapse-item{
+          .van-collapse-item__title--expanded::after {
+            visibility hidden
+          }
+        }
+        .van-collapse-item:first-child {
+          border-bottom: 1px solid #737577;
+        }
+        .van-collapse-item__title {
+          height 86px;
+          line-height 86px;
+          height 86px;
+         
+          background-color $color-bgc-2;
+         
+          .van-cell__title{
+            font-size 30px;
+            color #fff;
+            text-align left;         
+          }
+          .van-cell__right-icon {
+            color: transparent;
+          }
+        }
+        .icon_down {
+          position: absolute;
+          top: 45px;
+          right: 30px;
+          width: 16px;
+          height: 11px;
+
+        }
+        .van-collapse-item__content{
+          overflow auto;
+          max-height: 500px;
+          pdding: 0;
+          background-color $color-bgc-2
+          .van-cell{
+            width: 100%;
+            background-color $color-bgc-2
+            color: #fff;
+          }
+          ul {
+            li {
+              position relative;
+              height 86px;
+              line-height 86px;
+              height 86px;
+              padding-left:20px;
+              border-bottom: 1px solid #737577;
+
+            }
+            li:first-child {
+              background:rgba(34,40,50,0.9)
+
+            }
+          }
+         
+        }
+       .btn {
+            width: 100%
+            height 88px;
+            padding: 19px 0;
+            box-sizing border-box;
+            button {
+              width:49%;
+              height 50px;
+              line-height 50px;
+              background-color #222934;
+              color: #fff;
+              font-size: 30px;
+              text-align: center;
+              border: none;
+            }
+            .line {
+              display inline-block;
+              width: 0px;
+              height 50px
+              border-left: 2px dashed #fff;
+              vertical-align top;
+            }
+          }
+    
+    }
+    .select_layer:after {
+      position: absolute;
+      top: -0.379rem;
+      right: 0.186667rem;
+      content: '';
+      width: 0px;
+      height 0px;
+
+      border: 15px solid transparent;
+      border-bottom: 15px solid $color-bgc-2;
+      z-index: 9999
+    }
+  }
+</style>

@@ -1,0 +1,436 @@
+<!-- 成本管理 -->
+<template>
+  <div class="container-cost_control">
+    <!-- 头部 -->
+    <van-nav-bar
+      title="成本管理"
+      @click-left="goBack"
+      @click-right="changeScreen"
+      fixed
+      :border="false"
+      :z-index="100"
+    >
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+      <img src="../../../assets/imgs/screen.png" class="screen fontsize" slot="right">
+    </van-nav-bar>
+    <div class="Interlayer"></div>
+    <div class="wrapper">
+      <div
+        class="cost_control_box"
+        v-for="item in costControlLists"
+        :key="item.index"
+        @click="costControlDetails(item)"
+      >
+        <div class="cost_control_title">
+          <span class="title_index">{{item.value}}</span>
+          <span class="title_content">{{item.title}}</span>
+          <span class="el-icon-arrow-right"></span>
+        </div>
+        <div class="cost_control_content">
+          <span class="content_details">
+            BIM工程量:
+            <span>{{item.BIM}}</span>
+          </span>
+          <span class="content_details">
+            系数:
+            <span>{{item.coefficient}}</span>
+          </span>
+          <span class="content_details">
+            施工预算量:
+            <span>{{item.budget_volume}}</span>
+          </span>
+          <span class="content_details">
+            实际消耗量:
+            <span>{{item.consumption}}</span>
+          </span>
+          <span class="content_details">
+            差额:
+            <span>{{item.difference}}</span>
+          </span>
+          <span class="content_details">
+            偏差率:
+            <span>{{item.deviation_rate}}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- 筛选内容 -->
+    <div class="select_layer" v-show="shwoScreen">
+      <van-collapse v-model="activeName" accordion>
+        <van-collapse-item title="整栋模型" name="1">
+          <div slot="icon">
+            <img class="icon_down" src="../../../assets/imgs/select_down.png">
+          </div>
+          <van-radio-group v-model="radioTung">
+            <van-radio v-for="item in radio_tung" :key="item.index" @click="clickTung(item)" :name="item.value">{{item.text}}</van-radio>
+          </van-radio-group>
+        </van-collapse-item>
+        <van-collapse-item title="全部专业" name="2">
+          <div slot="icon">
+            <img class="icon_down" src="../../../assets/imgs/select_down.png">
+          </div>
+          <van-radio-group v-model="radioMajor">
+            <van-radio v-for="item in radio_major" :key="item.index" @click="clickMajor(item)" :name="item.value">{{item.text}}</van-radio>
+          </van-radio-group>
+        </van-collapse-item>
+        <van-collapse-item title="全部楼层" name="3">
+          <div slot="icon">
+            <img class="icon_down" src="../../../assets/imgs/select_down.png">
+          </div>
+          <van-radio-group v-model="radioFloor">
+            <van-radio v-for="item in radio_floor" :key="item.index" @click="clickFloor(item)" :name="item.value">{{item.text}}</van-radio>
+          </van-radio-group>
+        </van-collapse-item>
+        <van-collapse-item title="全部资源" name="4">
+          <div slot="icon">
+            <img class="icon_down" src="../../../assets/imgs/select_down.png">
+          </div>
+          <van-radio-group v-model="radioResources">
+            <van-radio v-for="item in radio_resources" :key="item.index" @click="clickResources(item)" :name="item.value">{{item.text}}</van-radio>
+          </van-radio-group>
+        </van-collapse-item>
+        <van-collapse-item title="进度节点" name="5">
+          <div slot="icon">
+            <img class="icon_down" src="../../../assets/imgs/select_down.png">
+          </div>
+          <van-radio-group v-model="radioNode">
+            <van-radio v-for="item in radio_node" :key="item.index" @click="clickNode(item)" :name="item.value">{{item.text}}</van-radio>
+          </van-radio-group>
+        </van-collapse-item>
+      </van-collapse>
+      <div class="btn">
+        <button class="reset" @click=" resetFunc">重置</button>
+        <div class="line"></div>
+        <button class="check" @click="recordCheck">确认</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      activeName: "", //默认不展开
+      shwoScreen: false, //默认不显示筛选
+      radioTung: '',//整栋模型默认不选中
+      radioMajor: '',//专业默认不选中
+      radioFloor: '',//楼层默认不选中
+      radioResources: '',//资源默认不选中
+      radioNode: '',//进度节点默认不选中
+      costControlLists: [
+        {
+          value: 1,
+          title: "C20混凝土",
+          BIM: "100.00m³",
+          coefficient: "1.1",
+          budget_volume: "110.00m³",
+          consumption: "120.00m³",
+          difference: "10.00m³",
+          deviation_rate: "1.00%"
+        },
+        {
+          value: 2,
+          title: "C30混凝土",
+          BIM: "100.00m³",
+          coefficient: "1.1",
+          budget_volume: "110.00m³",
+          consumption: "120.00m³",
+          difference: "10.00m³",
+          deviation_rate: "1.00%"
+        },
+        {
+          value: 3,
+          title: "C40混凝土",
+          BIM: "100.00m³",
+          coefficient: "1.1",
+          budget_volume: "110.00m³",
+          consumption: "120.00m³",
+          difference: "10.00m³",
+          deviation_rate: "1.00%"
+        },
+        {
+          value: 4,
+          title: "C50混凝土",
+          BIM: "100.00m³",
+          coefficient: "1.1",
+          budget_volume: "110.00m³",
+          consumption: "120.00m³",
+          difference: "10.00m³",
+          deviation_rate: "1.00%"
+        },
+        {
+          value: 5,
+          title: "C60混凝土",
+          BIM: "100.00m³",
+          coefficient: "1.1",
+          budget_volume: "110.00m³",
+          consumption: "120.00m³",
+          difference: "10.00m³",
+          deviation_rate: "1.00%"
+        }
+      ],
+      radio_tung: [
+        {value: '1', text: '整栋模型'},
+        {value: '2', text: 'A1栋'},
+        {value: '3', text: 'A2栋'},
+      ],//整栋模型列表
+      radio_major: [
+        {value: '1', text: '全部专业'},
+        {value: '2', text: '建筑专业'},
+        {value: '3', text: '结构专业'},
+        {value: '4', text: '暖通系统'},
+        {value: '5', text: '通风系统'},
+        {value: '6', text: '弱电系统'},
+        {value: '7', text: '强电系统'},
+      ],//专业列表
+      radio_floor: [
+        {value: '1', text: '全部楼层'},
+        {value: '2', text: '1F'},
+        {value: '3', text: '2F'},
+        {value: '4', text: '3F'},
+        {value: '5', text: '4F'},
+      ],//楼层列表
+      radio_resources: [
+        {value: '1', text: '全部资源'},
+        {value: '2', text: 'C20混凝土'},
+        {value: '3', text: 'C30混凝土'},
+        {value: '4', text: 'M0821'},
+        {value: '5', text: 'M0915'},
+      ],//资源列表
+      radio_node: [
+        {value: '1', text: '进度节点'},
+        {value: '2', text: '进度节点1'},
+        {value: '3', text: '进度节点2'},
+      ],//进度节点列表
+      screen_list: [],//筛选列表
+    };
+  },
+  methods: {
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    },
+    //查看详情
+    costControlDetails(item) {
+      console.log("item", item);
+      this.$router.push({ path: "/CostControlDetails" });
+    },
+    //右侧筛选
+    changeScreen() {
+      this.shwoScreen = !this.shwoScreen;
+    },
+    // 重置
+    resetFunc() {
+      this.radioTung = ''
+      this.radioMajor = ''
+      this.radioFloor = ''
+      this.radioResources = ''
+      this.radioNode = ''
+      this.screen_list = []
+      console.log("重置",this.screen_list)
+    },
+    //确认 
+    recordCheck() {
+      console.log('确认',this.screen_list)
+    },
+    //选中楼栋
+    clickTung(item) {
+      console.log(item,'clickTung')
+      this.screen_list.push(item)
+    },
+    //选中专业
+    clickMajor(item) {
+      console.log(item,'clickMajor')
+      this.screen_list.push(item)
+    },
+    //选中楼层
+    clickFloor(item) {
+      console.log(item,'clickFloor')
+      this.screen_list.push(item)
+    },
+    //选中资源
+    clickResources(item) {
+      console.log(item,'clickResources')
+      this.screen_list.push(item)
+    },
+    //选中进度节点
+    clickNode(item) {
+      console.log(item,'clickNode')
+      this.screen_list.push(item)
+    },
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-cost_control
+  width 100%
+  height 100%
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    .fontsize
+      font-size 42px
+      color #333
+      display inline-block
+      vertical-align middle
+    .screen
+      width 41px
+      height 35px
+  .Interlayer
+    height 88px
+  .wrapper
+    .cost_control_box
+      height 250px
+      padding 0 23px
+      background-color #fff
+      color #333
+      margin-top 12px
+      .cost_control_title
+        height 88px
+        padding 24px 0
+        box-sizing border-box
+        font-size 30px
+        .title_index
+          display inline-block
+          width 40px
+          height 40px
+          background-color #5A92FF
+          color #fff
+          border-radius 50%
+          text-align center
+          line-height 40px
+        .title_content
+          margin-left 36px
+        .el-icon-arrow-right
+          float right
+      .cost_control_content
+        padding 0 20px
+        .content_details
+          display inline-block
+          width 50%
+          line-height 50px
+          font-size 28px
+</style>
+<style>
+/* 顶部表头 */
+.container-cost_control .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+/*右上角点击筛选样式*/ 
+.select_layer {
+  position: fixed;
+  top: 86px;
+  right: 14px;
+  width: 352px;
+  box-sizing: border-box;
+  background-color: #222832;
+  opacity:0.9;
+  border-radius:8px;
+  padding: 10px 20px;
+  z-index: 999;
+}
+.select_layer .van-hairline--top-bottom::after{
+  border: none;
+}
+.select_layer .van-hairline--top::after {
+  border-top: none;
+  border-bottom: 1px solid #737577;
+}
+.select_layer .van-collapse  {
+  max-height: 1109px;
+}
+.select_layer .van-collapse-item .van-collapse-item__title--expanded::after {
+  visibility: hidden;
+}
+.select_layer .van-collapse-item:first-child {
+  border-bottom: 1px solid #737577;
+}
+.select_layer .van-collapse-item__title {
+  height: 86px;
+  line-height: 86px;
+  background-color: #222832;
+}
+.select_layer .van-cell__title{
+  font-size: 30px;
+  color: #fff;
+  text-align: left;         
+}
+.select_layer .van-cell__right-icon {
+  color: transparent;
+}
+.select_layer .icon_down {
+  position: absolute;
+  top: 45px;
+  right: 30px;
+  width: 16px;
+  height: 11px;
+}
+.select_layer .van-collapse-item__content{
+  padding: 0;
+  background-color: #222832;
+  color: #fff;
+}
+.select_layer .van-cell {
+  width: 100%;
+  background-color: #222832;
+  color: #fff;
+}
+.select_layer .van-radio {   
+  height: 86px;
+  line-height: 86px;
+  height: 86px;
+  padding-left:20px;
+  border-bottom: 1px solid #737577;
+}
+.select_layer .van-radio:last-child {
+  border: 0;
+}
+.select_layer .van-radio .van-radio__label {
+  color: #fff;
+  vertical-align: baseline;
+}
+.select_layer .van-radio .van-radio__icon {
+  vertical-align: baseline;
+}
+.select_layer .van-radio .van-radio__icon .van-icon {
+  border: 2px solid #fff;
+  width: 25px;
+  height: 25px;
+}
+.select_layer .btn {
+  width: 100%;
+  height: 88px;
+  padding: 19px 0;
+  box-sizing: border-box;
+}
+.select_layer button {
+  width:49%;
+  height: 50px;
+  line-height: 50px;
+  background-color: #222934;
+  color: #fff;
+  font-size: 30px;
+  text-align: center;
+  border: none;
+}
+.select_layer .line {
+  display: inline-block;
+  width: 0px;
+  height: 50px;
+  border-left: 2px dashed #fff;
+  vertical-align: top;
+}
+.select_layer:after {
+  position: absolute;
+  top: -0.379rem;
+  right: 0.186667rem;
+  content: '';
+  width: 0px;
+  height: 0px;
+  border: 15px solid transparent;
+  border-bottom: 15px solid #222832;
+  z-index: 9999
+}
+</style>

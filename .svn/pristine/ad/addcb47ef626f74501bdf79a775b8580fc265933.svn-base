@@ -1,0 +1,287 @@
+
+// 范围管理系列 api调用
+const userID = localStorage.getItem("userId"); //用户ID
+const projectid = localStorage.getItem("projectid") ? localStorage.getItem("projectid") : '12345678';
+import {
+    QueryChangList, QueryPurchaseInfo, ReceiveChange,
+    GetChangeInfo, QueryPurchaseList, QueryPurchaseInfoItems,
+    GetBuilding, GetSpecialtybyBuilding, GetFloorbyBuilding,
+    GetCurrentListType, PurcahseApprove, SavePurchase,
+    GetProjectName
+} from '../../api/api'
+
+// 获取采购列表
+export const getPurchaseList = (that) => {
+    let par = {
+        ProjectId: projectid,
+        BuildName: that.options.BuildName == '全部' ? '' : that.options.BuildName,
+        Specialty: that.options.Specialty == '全部' ? '' : that.options.Specialty,
+        Floor: that.options.Floor == '全部' ? '' : that.options.Floor,
+        Name: that.options.Name,
+        page: that.options.page,
+        rows: that.options.rows,
+    }
+    QueryPurchaseList(par).then(res => {
+        that.isLoading = false;
+        that.ispull = false;
+        if (res.StatusCode == 200) {
+            res.Detiel.forEach(element => {
+                element.dCreateTime = element.dCreateTime
+                    ? require("moment")(element.dCreateTime).format("YYYY-MM-DD")
+                    : "/";
+                element.DemandTime = element.DemandTime
+                    ? require("moment")(element.DemandTime).format("YYYY-MM-DD")
+                    : "/";
+                that.rangeList.push(element);
+            });
+            if (res.Detiel.length == that.options.rows) {
+                that.ispull = true;
+            }
+            that.sel_show = false;
+        }
+    })
+}
+
+// 获取清单类型
+export const getListType = (that) => {
+    GetCurrentListType({ projectid: projectid }).then(res => {
+        if (res.StatusCode == 200) {
+            that.listtype = res.Result;
+            if (res.Result == 1) {
+                that.labelText = "资源名称";
+            } else {
+                that.labelText = "项目名称";
+            }
+        }
+    });
+};
+
+// 获取采购信息
+export const getPurchaseInfo = (that, par, cb) => {
+    QueryPurchaseInfo(par).then(
+        res => {
+            if (typeof cb == 'function' && res.StatusCode == 200) {
+                cb(res)
+                that.$message({ type: 'success', message: res.Message, center: 'true' })
+            } else {
+                that.$message({ type: 'warning', message: res.Message, center: 'true' })
+            }
+        }, () => {
+            that.$message({ type: 'warning', message: res.Message, center: 'true' })
+        }
+    )
+}
+
+// 发起采购
+export const sponsorPurchase = (that, gets, poss, cb) => {
+    SavePurchase(gets, poss).then(res => {
+        if (res.StatusCode == 200 && typeof cb == 'function') {
+            cb(res)
+            that.$message({
+                type: "success",
+                message: res.Message,
+                center: "true"
+            });
+            that.$router.go(-1);
+        } else {
+            that.$message({
+                type: "success",
+                message: res.Message,
+                center: "true"
+            });
+            that.$router.go(-1);
+        }
+    }, () => {
+        that.$message({
+            type: "success",
+            message: res.Message,
+            center: "true"
+        });
+        that.$router.go(-1);
+    })
+}
+
+// 获取采购详情
+export const getPurchaseListDetil = (par, cb) => {
+    QueryPurchaseInfoItems(par).then(res => {
+        if (typeof cb == "function") {
+            cb(res)
+        }
+    });
+};
+
+// 采购---审核/-接收/拒收
+export const purchaseCheck = (that, par) => {
+    PurcahseApprove(par).then(res => {
+        if (res.StatusCode == 200) {
+            that.$message({
+                type: "success",
+                message: "处理成功！",
+                center: "true"
+            });
+            that.$router.go(-1);
+        }
+    });
+}
+
+// 获取变更列表
+export const getChangeList = (that, type) => {
+    let par = {
+        projectid: projectid,
+        building: that.options.BuildName == '全部' ? '' : that.options.BuildName,
+        specialty: that.options.Specialty == '全部' ? '' : that.options.Specialty,
+        floor: that.options.Floor == '全部' ? '' : that.options.Floor,
+        name: that.options.Name,
+        page: that.options.page,
+        rows: that.options.rows,
+        type
+    }
+    if (type == 0) {
+        par.page = that.ingCurrentPage;
+    } else if (type == 1) {
+        par.page = that.handleCurrentPage;
+    } else if (type == 2) {
+        par.page = that.overCurrentPage;
+    } else {
+        return;
+    }
+    QueryChangList(par).then(data => {
+        if (data.StatusCode === 200) {
+            if (data.Detiel.length != 0 && type == 0) {
+                that.ingPageTotal = parseInt(data.Count);
+                that.dataIng = [];
+                that.pushData(data, item => {
+                    that.dataIng.push(item);
+                });
+            }
+
+            if (data.Detiel.length != 0 && type == 1) {
+                that.handlePageTotal = parseInt(data.Count);
+                that.dataHandle = [];
+                that.pushData(data, item => {
+                    that.dataHandle.push(item);
+                });
+            }
+
+            if (data.Detiel.length != 0 && type == 2) {
+                that.overPageTotal = parseInt(data.Count);
+                that.dataOver = [];
+                that.pushData(data, item => {
+                    that.dataOver.push(item);
+                });
+            }
+        } else {
+            that.$message({
+                type: "error",
+                message: data.Message,
+                center: "true"
+            });
+        }
+        if (type == 0) {
+            that.ingLoading = false;
+        } else if (type == 1) {
+            that.handleLoading = false;
+        } else if (type == 2) {
+            that.overLoading = false;
+        }
+    });
+}
+
+// 获取变更详情
+export const getChangeInfo = (par, cb) => {
+    GetChangeInfo(par).then(res => {
+        if (res.StatusCode == 200 && typeof cb == "function") {
+            cb(res.Result)
+        }
+    })
+}
+
+// 变更---审核/-接收/拒收
+export const chanageCheck = (that, par) => {
+    ReceiveChange(par).then(res => {
+        if (res.StatusCode == 200) {
+            that.$message({
+                type: "success",
+                message: "处理成功！",
+                center: "true"
+            });
+            that.$router.go(-1);
+        }
+    });
+}
+
+// 获取楼栋
+export const getBuildList = (that, cb) => {
+    GetBuilding({ projectid: projectid }).then(res => {
+        if (res.StatusCode == 200) {
+            if (res.Detiel.length > 0) {
+                res.Detiel.unshift({ text: "全部" })
+            }
+            if (typeof cb == 'function') {
+                cb(res.Detiel)
+            } else {
+                that.BuildNameList = res.Detiel;
+            }
+        }
+    });
+}
+
+// 楼栋 -> 获取专业
+export const getSpecialtyList = (that) => {
+    GetSpecialtybyBuilding({ projectid: projectid, building: that.options.BuildName }).then(
+        res => {
+            that.specLoading = false;
+            if (res.StatusCode == 200) {
+                if (res.Detiel.length > 0) {
+                    res.Detiel.unshift({ text: "全部" })
+                }
+                that.SpecialtyList = res.Detiel;
+            }
+        }
+    );
+}
+
+// 楼栋 -> 获取项目名称
+export const getProjectNames = (that) => {
+    // that.load();
+    that.projectnameLoading = true;
+    GetProjectName({ projectid: projectid, BuildName: that.buildname }).then(
+        res => {
+            that.projectnameLoading = false;
+            // that.$toast.clear();
+            if (res.StatusCode == 200) {
+                that.projectNameList = res.Detiel;
+            }
+        }, () => { that.projectnameLoading = false }
+    );
+
+}
+
+// 楼栋 -> 专业 -> 获取模型楼层
+export const getFloorList = (that) => {
+    GetFloorbyBuilding({ projectid: projectid, building: that.options.BuildName, Specialty: that.options.Specialty }).then(
+        res => {
+            if (res.StatusCode == 200) {
+                if (res.Detiel.length > 0) {
+                    res.Detiel.unshift({ text: "全部" })
+                }
+                that.FloorbyList = res.Detiel;
+            }
+        }
+    );
+}
+
+// 清除选项
+export const clearSel = (that, sel) => {
+    if (sel == 1) {
+        that.SpecialtyList = [];
+        that.FloorbyList = [];
+        that.options.Specialty = '';
+        that.options.Floor = '';
+
+    } else if (sel == 2) {
+        that.FloorbyList = [];
+        that.options.Floor = '';
+    }
+}
+

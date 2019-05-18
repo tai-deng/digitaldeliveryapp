@@ -1,0 +1,341 @@
+<!-- quality质量管理 -->
+<template>
+  <div class="container-quality">
+    <!-- 头部 -->
+    <van-nav-bar title="质量管理" @click-left="goBack" fixed :border="false" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+      <!-- <img src="../../../assets/imgs/screen.png" class="screen fontsize" slot="right"> -->
+    </van-nav-bar>
+    <div class="wrapper">
+      <van-tabs v-model="active" swipeable animated sticky @change="handleIndex">
+        <van-tab v-for="item in titleArr" :title="item.label" :key="item.value">
+          <!-- 搜索框 -->
+          <van-search
+            v-model="value"
+            placeholder="请输入搜索关键词"
+            show-action
+            shape="round"
+            @search="onSearch"
+          >
+            <div slot="action" @click="onSearch">搜索</div>
+          </van-search>
+          <!-- 隔层 -->
+          <div class="interlayer"></div>
+          <!-- 表格 -->
+          <el-table :data="tableData" style="width: 100%" @row-click="clickRow">
+            <el-table-column type="index" align="center" label="序号" width="36"></el-table-column>
+            <el-table-column prop="storied_building" align="center" width="62">
+              <template slot="header">
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    楼栋
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>整体模型</el-dropdown-item>
+                    <el-dropdown-item>A1栋</el-dropdown-item>
+                    <el-dropdown-item>A2栋</el-dropdown-item>
+                    <el-dropdown-item>A3栋</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
+            </el-table-column>
+            <el-table-column prop="major" align="center" width="66">
+              <template slot="header">
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    专业
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>全部</el-dropdown-item>
+                    <el-dropdown-item>建筑专业</el-dropdown-item>
+                    <el-dropdown-item>结构专业</el-dropdown-item>
+                    <el-dropdown-item>暖通专业</el-dropdown-item>
+                    <el-dropdown-item>通风专业</el-dropdown-item>
+                    <el-dropdown-item>弱电系统</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
+            </el-table-column>
+            <el-table-column prop="floor" align="center" width="62">
+              <template slot="header">
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    楼层
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>全部</el-dropdown-item>
+                    <el-dropdown-item>1F</el-dropdown-item>
+                    <el-dropdown-item>2F</el-dropdown-item>
+                    <el-dropdown-item>3F</el-dropdown-item>
+                    <el-dropdown-item>4F</el-dropdown-item>
+                    <el-dropdown-item>5F</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
+            </el-table-column>
+            <el-table-column prop="component_type" align="center" width="86">
+              <template slot="header">
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    构建类型
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>全部</el-dropdown-item>
+                    <el-dropdown-item>墙</el-dropdown-item>
+                    <el-dropdown-item>柱</el-dropdown-item>
+                    <el-dropdown-item>梁</el-dropdown-item>
+                    <el-dropdown-item>板</el-dropdown-item>
+                    <el-dropdown-item>M0821</el-dropdown-item>
+                    <el-dropdown-item>C0915</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
+            </el-table-column>
+            <el-table-column prop="state" align="center" width="62">
+              <template slot="header">
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    状态
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>已上传</el-dropdown-item>
+                    <el-dropdown-item>未上传</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
+            </el-table-column>
+          </el-table>
+        </van-tab>
+      </van-tabs>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      active: 0, //tab默认位置
+      value: "",
+      titleArr: [
+        { value: 0, label: "施工方案" },
+        { value: 1, label: "技术交底" },
+        { value: 2, label: "工区验收" }
+      ],
+      tableData: [
+        {
+          storied_building: "A1栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A2栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A3栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A4栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A5栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A6栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A7栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        },
+        {
+          storied_building: "A8栋",
+          major: "建筑专业",
+          floor: "1F",
+          component_type: "墙",
+          state: "已上传"
+        }
+      ]
+    };
+  },
+  methods: {
+    //tab切换
+    handleIndex() {
+      console.log("active", this.active);
+    },
+    //点击搜索
+    onSearch() {
+      console.log("value", this.value);
+    },
+    //点击表格行
+    clickRow(row) {
+      console.log('row',row)
+      this.$router.push({ path: "/ControlDetails" });
+    },
+    //返回
+    goBack() {
+      this.$router.push({ path: "/nav/to/index" });
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-quality
+  width 100%
+  height 100%
+  .van-nav-bar
+    height 88px
+    line-height 88px
+    border-bottom 1px solid #E5E5E5
+    .fontsize
+      font-size 42px
+      color #333
+      display inline-block
+      vertical-align middle
+    .screen
+      width 41px
+      height 35px
+  .wrapper
+    margin-top 88px
+    .interlayer
+      width 100%
+      height 21px
+</style>
+<style>
+/* 顶部表头 */
+.container-quality .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+/*tab切换栏*/
+.container-quality .van-tab span {
+  font-size: 30px;
+  line-height: 80px;
+}
+.container-quality .van-tabs--line .van-tabs__wrap {
+  height: 80px;
+}
+.container-quality .van-tabs--line .van-tabs__wrap {
+  color: #666;
+  position: fixed;
+  top: 88px !important;
+}
+.container-quality .van-tabs--line .van-tabs__wrap .van-tabs__nav {
+  background-color: #fff;
+}
+.container-quality .van-tab--active {
+  color: #5a92ff;
+}
+/* tab下边线 */
+.container-quality .van-hairline--top-bottom::after {
+  border-width: 0 0 2px 0;
+}
+.container-quality .van-tabs--line {
+  padding-top: 80px;
+}
+.container-quality .van-tabs__line {
+  height: 4px;
+  bottom: 19px;
+  width: 120px;
+  bottom: 21px;
+  background-color: #5a92ff;
+}
+/* .container-quality .van-tabs__content {
+  margin-top: 88px;
+} */
+/* 搜索栏 */
+.container-quality .van-search {
+  height: 98px;
+  padding: 17px 24px;
+}
+.container-quality .van-search .van-search__content {
+  height: 64px;
+  border-radius: 0;
+}
+.container-quality .van-search .van-search__content .van-cell {
+  line-height: 64px;
+  font-size: 28px;
+}
+.container-quality .van-search .van-search__content .van-cell .van-icon {
+  font-size: 40px;
+}
+.container-quality .van-search__action {
+  width: 120px;
+  line-height: 64px;
+  color: #fff;
+  font-size: 30px;
+  text-align: center;
+  background: rgba(88, 146, 255, 1);
+  border-radius: 8px;
+  margin-left: 18px;
+}
+/*表格*/
+.container-quality .el-table {
+  color: #333;
+  font-size: 24px;
+}
+.container-quality .el-table thead tr th {
+  background-color: #5892ff;
+  color: #fff;
+}
+.container-quality .el-table .cell {
+  line-height: 76px;
+}
+.container-quality .el-table th div {
+  vertical-align: middle;
+  color: #fff;
+}
+/* .container-quality .el-icon--right {
+  width: 18px;
+  height: 9px;
+  display: inline-block;
+  background-image: url('../../../assets/imgs/bottom.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-color: #fff;
+} */
+/*下拉框*/
+.el-dropdown-menu {
+  background-color: #222832;
+  opacity: 0.9;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  border: 0;
+}
+.el-dropdown-menu__item {
+  color: #fff;
+  width: 140px;
+  line-height: 85px;
+  text-align: center;
+  border-bottom: 1px solid #737577;
+}
+</style>

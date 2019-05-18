@@ -1,0 +1,715 @@
+<!-- manpower人力资源 -->
+<template>
+  <div class="container-manpower">
+    <van-nav-bar title="人力资源"  @click-left="goBack">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+
+    <van-row gutter="20" class="wrapper manpower-upload-box" style="margin-left:0;margin-right:0;">
+      <van-col span="8">
+        <van-uploader :after-read="onRead" class="manpower-upload">
+          <van-icon name="plus"/>
+        </van-uploader>
+      </van-col>
+      <van-col span="16" class="manpower-upload-txt">
+        <span>点击上传图片</span>
+        <span class="txt-info">建议尺寸XX*XX 大小不能</span>
+      </van-col>
+    </van-row>
+
+    <van-cell-group>
+      <van-field placeholder="请输入名称" label="姓名：" v-model="username"/>
+    </van-cell-group>
+
+    <van-row class="gender">
+      <van-col span="4" class="gender-txt">性别：</van-col>
+      <van-col span="20">
+        <van-radio-group v-model="gender">
+          <van-radio name="1">男</van-radio>
+          <van-radio name="2">女</van-radio>
+        </van-radio-group>
+      </van-col>
+    </van-row>
+
+    <van-cell-group>
+      <van-field placeholder="请输入民族" clearable label="民族：" v-model="nation"/>
+    </van-cell-group>
+
+    <van-cell-group class="idnum">
+      <van-field placeholder="请输入身份证" clearable label="身份证：" v-model="idnum"/>
+    </van-cell-group>
+
+    <van-cell-group class="phoneNumber">
+      <van-field placeholder="请输入手机号" clearable label="手机号：" v-model="phoneNumber"/>
+    </van-cell-group>
+
+    <van-cell-group>
+      <van-field
+        placeholder="请选择省份"
+        label="省份："
+        right-icon="arrow"
+        disabled
+        v-model="province"
+        @click-right-icon="choiceProvince"
+      />
+    </van-cell-group>
+    <van-popup v-model="province_show" position="bottom" :close-on-click-overlay="true" class="iPopup">
+      <van-area 
+        :area-list="areaList"
+        @cancel="onProvinceCancel"
+        @confirm="onProvinceConfirm"
+      />
+    </van-popup>
+    <!-- <van-address-edit
+      :area-list="areaList"
+      show-postal
+      show-delete
+      show-set-default
+      show-search-result
+      :search-result="searchResult"
+      @save="onSave"
+      @delete="onDelete"
+      @change-detail="onChangeDetail"
+    /> -->
+
+    <van-cell-group>
+      <van-field v-model="address" type="textarea" placeholder="请输入详细家庭地址" rows="2" autosize/>
+    </van-cell-group>
+
+    <van-cell-group class="workType">
+      <van-field
+        placeholder="请选择工种"
+        label="工种："
+        right-icon="arrow"
+        disabled
+        v-model="workType"
+        @click-right-icon="choiceWorkType"
+      />
+    </van-cell-group>
+    <van-actionsheet
+      class="iActionsheet"
+      v-model="workType_show"
+      :actions="workTypeList"
+      @select="onChangeWorkType"
+    />
+
+    <van-cell-group class="realNameCard">
+      <van-field placeholder="请输入" label="实名卡账号：" v-model="realNameCard"/>
+    </van-cell-group>
+
+    <van-cell-group class="choiceTeam">
+      <van-field
+        placeholder="请选择班组"
+        label="班组："
+        right-icon="arrow"
+        disabled
+        v-model="team"
+        @click-right-icon="choiceTeam"
+      />
+    </van-cell-group>
+    <van-popup v-model="team_show" position="bottom" class="iPopup">
+      <van-picker
+        show-toolbar
+        title="班组"
+        :columns="team_columns"
+        @cancel="onTeamCancel"
+        @confirm="onTeamConfirm"
+      />
+    </van-popup>
+
+    <van-cell-group class="company">
+      <van-field
+        placeholder="请选择公司"
+        label="所属公司："
+        right-icon="arrow"
+        disabled
+        v-model="company"
+        @click-right-icon="choiceCompany"
+      />
+    </van-cell-group>
+    <van-popup v-model="company_show" position="bottom" class="iPopup">
+      <van-picker
+        show-toolbar
+        title="所属公司"
+        :columns="company_columns"
+        @cancel="onCompanyCancel"
+        @confirm="onCompanyConfirm"
+      />
+    </van-popup>
+
+    <van-cell-group class="payCard">
+      <van-field placeholder="请输入" label="工资卡号：" v-model="payCard"/>
+    </van-cell-group>
+
+    <van-cell-group class="guardCard">
+      <van-field placeholder="请输入" label="门禁卡号：" v-model="guardCard"/>
+    </van-cell-group>
+
+    <van-cell-group class="laborContractState">
+      <van-field
+        placeholder="请选择状态"
+        label="劳动合同签署状态："
+        right-icon="arrow"
+        disabled
+        v-model="laborContractState"
+        @click-right-icon="choiceLaborContractState"
+      />
+    </van-cell-group>
+
+    <van-cell-group class="safetyTrainingState">
+      <van-field
+        placeholder="请选择状态"
+        label="安全培训状态："
+        right-icon="arrow"
+        disabled
+        v-model="safetyTrainingState"
+        @click-right-icon="choiceSafetyTrainingState"
+      />
+    </van-cell-group>
+
+    <van-row class="gender workPermit">
+      <van-col span="11" class="gender-txt">是否有特种作业证号：</van-col>
+      <van-col span="13">
+        <van-radio-group v-model="workPermit">
+          <van-radio name="1">有</van-radio>
+          <van-radio name="2">无</van-radio>
+        </van-radio-group>
+      </van-col>
+    </van-row>
+
+    <van-cell-group class="workPermitNum">
+      <van-field placeholder="请输入" label="特种作业证证号：" v-model="workPermitNum"/>
+    </van-cell-group>
+
+    <van-cell-group class="operationCategory">
+      <van-field
+        placeholder="请选择操作类别"
+        label="操作类别："
+        right-icon="arrow"
+        disabled
+        v-model="operationCategory"
+        @click-right-icon="choiceOperationCategory"
+      />
+    </van-cell-group>
+    <van-popup v-model="operationCategory_show" position="bottom" class="iPopup">
+      <van-picker
+        show-toolbar
+        title="操作类别"
+        :columns="operationCategory_columns"
+        @cancel="onOperationCategoryCancel"
+        @confirm="onOperationCategoryConfirm"
+      />
+    </van-popup>
+
+    <van-cell-group class="certificationDate">
+      <van-field
+        placeholder="请选择日期"
+        label="初次领证日期："
+        right-icon="calender-o"
+        disabled
+        v-model="certificationDate"
+        @click-right-icon="choiceCertificationDate"
+      />
+    </van-cell-group>
+    <van-popup v-model="certificationDate_show" position="bottom" class="iPopup">
+      <van-datetime-picker
+        v-model="currentDate"
+        type="date"
+        @cancel="onCertificationDateCancel"
+        @confirm="onCertificationDateConfirm"
+      />
+    </van-popup>
+
+    <div class="glen">使用期限</div>
+
+    <van-cell-group class="beginTime">
+      <van-field
+        placeholder="请选择时间"
+        label="开始时间："
+        right-icon="clock-o"
+        disabled
+        v-model="beginTime"
+        @click-right-icon="choiceBeginTime"
+      />
+    </van-cell-group>
+    <van-popup v-model="beginTime_show" position="bottom" class="iPopup">
+      <van-datetime-picker
+        v-model="currentTime"
+        type="time"
+        @cancel="onBeginTimeCancel"
+        @confirm="onBeginTimeConfirm"
+      />
+    </van-popup>
+
+    <van-cell-group class="endTime">
+      <van-field
+        placeholder="请选择时间"
+        label="结束时间："
+        right-icon="clock-o"
+        disabled
+        v-model="endTime"
+        @click-right-icon="choiceEndTime"
+      />
+    </van-cell-group>
+    <van-popup v-model="endTime_show" position="bottom" class="iPopup">
+      <van-datetime-picker
+        v-model="currentEndTime"
+        type="time"
+        @cancel="onEndTimeCancel"
+        @confirm="onEndTimeConfirm"
+      />
+    </van-popup>
+
+    <van-row class="iButton">
+      <van-col span="22" offset="1">
+        <van-button type="info" size="large">确认</van-button>
+      </van-col>
+    </van-row>
+
+    <van-actionsheet class="iActionsheet" v-model="actionsheet_show" :actions="actions" @select="onSelect"/>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import areaList from "../../../../src/assets/js/area";
+export default {
+  data() {
+    return {
+      currentAction: null,
+      province_show: false,  //
+      workType_show: false,  //工种van-actionsheet是否显示
+      team_show: false,  //班组van-popup是否显示
+      company_show: false,  //所属公司van-popup是否显示
+      operationCategory_show: false,  //操作类别van-popup是否显示
+      certificationDate_show: false,  //初次领证日期van-popup是否显示
+      beginTime_show: false,  //开始时间van-popup是否显示
+      endTime_show: false,  //结束时间van-popup是否显示
+      actionsheet_show: false,  //van-actionsheet是否显示
+      actions: [],  //Actionsheet组件菜单选项数组
+      data: "manpower人力资源",
+      username: "",
+      gender: "",
+      nation: "",  //民族
+      idnum: "",  //身份证
+      phoneNumber: "",
+      province: "",
+      address: "",
+      workType: "",  //工种
+      workTypeList: [
+        {
+          name: "选项1"
+        },
+        {
+          name: "选项2",
+          subname: "描述信息"
+        }
+      ],
+      laborContractStateData: [
+        {
+          name: "状态1"
+        },
+        {
+          name: "状态2"
+        }
+      ],
+      safetyTrainingStateData: [
+        {
+          name: "状态3"
+        },
+        {
+          name: "状态4"
+        }
+      ],
+      realNameCard: "",  //实名卡账号
+      team: "",
+      team_columns: ["班组一", "班组二", "班组三"],
+      company: "",
+      company_columns: ["公司一", "公司二", "公司三"],
+      operationCategory_columns: ['类型一','类型二','类型三'],
+      payCard: "",
+      guardCard: "",
+      laborContractState: "",  //劳动合同签署状态
+      safetyTrainingState: "",  //安全培训状态
+      workPermit: "",  //是否有特种作业证号
+      workPermitNum: "",  //特种作业证号
+      operationCategory: "",  //操作类别
+      certificationDate: "",  //初次领证日期
+      currentDate: new Date(),
+      beginTime: "",
+      currentTime: "12:23",
+      endTime: "",
+      currentEndTime: "6:12",
+      areaList
+    };
+  },
+  methods: {
+    onRead(file) {
+      console.log(file);
+    },
+
+    choiceProvince() {
+      if (!this.province_show) {
+        this.province_show = true;
+      } else {
+        this.province_show = false;
+      }
+    },
+    /**
+     * van-actionsheet 显示/隐藏操作
+     */
+    choiceWorkType() {
+      if (!this.workType_show) {
+        this.workType_show = true;
+      } else {
+        this.workType_show = false;
+      }
+    },
+    /**
+     * van-popup 显示/隐藏操作
+     */
+    choiceTeam() {
+      if (!this.team_show) {
+        this.team_show = true;
+      } else {
+        this.team_show = false;
+      }
+    },
+    choiceCompany() {
+      if (!this.company_show) {
+        this.company_show = true;
+      } else {
+        this.company_show = false;
+      }
+    },
+    choiceOperationCategory(){
+      if (!this.operationCategory_show) {
+        this.operationCategory_show = true;
+      } else {
+        this.operationCategory_show = false;
+      }
+    },
+    choiceCertificationDate(){
+      if (!this.certificationDate_show) {
+        this.certificationDate_show = true;
+      } else {
+        this.certificationDate_show = false;
+      }
+    },
+    choiceBeginTime(){
+      if (!this.beginTime_show) {
+        this.beginTime_show = true;
+      } else {
+        this.beginTime_show = false;
+      }
+    },
+    choiceEndTime(){
+      if (!this.endTime_show) {
+        this.endTime_show = true;
+      } else {
+        this.endTime_show = false;
+      }
+    },
+    /**
+     * 选择劳动合同签署状态
+     */
+    choiceLaborContractState(){
+      this.actionsheet_show = true;
+      this.actions = this.laborContractStateData;
+      this.currentAction = "laborContractState";
+    },
+    /**
+     * 选择安全培训状态
+     */
+    choiceSafetyTrainingState(){
+      this.actionsheet_show = true;
+      this.actions = this.safetyTrainingStateData;
+      this.currentAction = "safetyTrainingState";
+    },
+    // onSave() {
+    //   Toast('save');
+    // },
+    // onDelete() {
+    //   Toast('delete');
+    // },
+    // onChangeDetail(val) {
+    //   if (val) {
+    //     this.searchResult = [{
+    //       name: '黄龙万科中心',
+    //       address: '杭州市西湖区'
+    //     }];
+    //   } else {
+    //     this.searchResult = [];
+    //   }
+    // },
+    onChangeWorkType(item) {
+      // Toast(`当前值：${value}, 当前索引：${index}`);
+      this.workType = item.name;
+      this.workType_show = false;
+    },
+    /**
+     * 选择班组
+     */
+    onTeamConfirm(value) {
+      this.team = value;
+      this.team_show = false;
+    },
+    onTeamCancel() {
+      this.team_show = false;
+    },
+    /**
+     * 选择所属公司
+     */
+    onCompanyConfirm(value) {
+      this.company = value;
+      this.company_show = false;
+    },
+    onCompanyCancel() {
+      this.company_show = false;
+    },
+    /**
+     * 选择操作类别
+     */
+    onOperationCategoryConfirm(value) {
+      this.operationCategory = value;
+      this.operationCategory_show = false;
+    },
+    onOperationCategoryCancel() {
+      this.operationCategory_show = false;
+    },
+    /**
+     * 选择初次领证日期
+     */
+    onCertificationDateConfirm(value){
+      this.certificationDate = require('moment')(value).format('YYYY-MM-DD');
+      this.certificationDate_show = false;
+    },
+    onCertificationDateCancel(){
+      this.certificationDate_show = false;
+    },
+    /**
+     * 选择与取消开始时间操作
+     */
+    onBeginTimeConfirm(value){
+      this.beginTime = value;
+      this.beginTime_show = false;
+    },
+    onBeginTimeCancel(){
+      this.beginTime_show = false;
+    },
+    /**
+     * 选择与取消结束时间操作
+     */
+    onEndTimeConfirm(value){
+      this.endTime = value;
+      this.endTime_show = false;
+    },
+    onEndTimeCancel(){
+      this.endTime_show = false;
+    },
+    /**
+     * 选择省份操作
+     */
+    onProvinceConfirm(val){
+      this.province = val[0].name + val[1].name + val[2].name;
+      this.province_show = false;
+    },
+    onProvinceCancel(){
+      this.province_show = false;
+    },
+    onSelect(v) {
+      this.actionsheet_show = false;
+      let action = this.currentAction;
+      switch(action){
+        case "laborContractState":
+          this.laborContractState = v.name;
+          break;
+        case "safetyTrainingState":
+          this.safetyTrainingState = v.name;
+          break;
+      }
+    },
+    goBack(){
+        this.$router.push({ path: "/nav/to/index" });
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-manpower {
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+<style>
+.container-manpower .van-cell .van-icon {
+  font-size: 34px;
+}
+.container-manpower .idnum .van-field__label,
+.container-manpower .phoneNumber .van-field__label {
+  max-width: 120px;
+}
+.container-manpower .realNameCard .van-field__label {
+  max-width: 180px;
+}
+.container-manpower .company .van-field__label,
+.container-manpower .payCard .van-field__label,
+.container-manpower .guardCard .van-field__label,
+.container-manpower .operationCategory .van-field__label,
+.container-manpower .beginTime .van-field__label,
+.container-manpower .endTime .van-field__label {
+  max-width: 150px;
+}
+.container-manpower .laborContractState .van-field__label{
+  max-width: 270px;
+}
+.container-manpower .safetyTrainingState .van-field__label,
+.container-manpower .certificationDate .van-field__label{
+  max-width: 210px;
+}
+.container-manpower .workPermitNum .van-field__label{
+  max-width: 240px;
+}
+/* Popup begin */
+.iPopup .van-picker-column {
+  font-size: 30px;
+}
+.iPopup .van-picker__cancel,
+.iPopup .van-picker__confirm,
+.iPopup .van-picker__title {
+  font-size: 30px;
+}
+.iPopup .van-picker__toolbar {
+  height: 88px;
+  line-height: 88px;
+}
+/* Popup end */
+.container-manpower .van-cell .van-field__label span{
+  font-weight: 600;
+}
+</style>
+
+<style scoped>
+.c-999999 {
+  color: #999999;
+}
+.mt-20 {
+  margin-top: 20px;
+}
+/* 头部 begin */
+.container-manpower .van-nav-bar {
+  height: 88px;
+  line-height: 88px;
+}
+.container-manpower .van-nav-bar__title {
+  font-size: 36px;
+  /* font-family: 'Microsoft YaHei'; */
+  font-weight: 600;
+}
+.container-manpower .van-nav-bar__left,
+.container-manpower .van-nav-bar__right {
+  font-size: 42px;
+}
+/* 头部 end */
+
+.wrapper {
+  padding: 0 20px;
+}
+.manpower-upload-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+.manpower-upload {
+  width: 200px;
+  height: 200px;
+  border: 1px lightgray dashed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.manpower-upload .van-icon {
+  font-size: 36px;
+}
+.manpower-upload-txt {
+  font-size: 30px;
+}
+.manpower-upload-txt span {
+  display: block;
+}
+.manpower-upload-txt .txt-info {
+  font-size: 28px;
+  color: #999999;
+  margin-top: 20px;
+}
+
+.container-manpower .van-cell {
+  font-size: 30px;
+  font-family: 'Microsoft YaHei';
+  line-height: 88px;
+}
+
+.container-manpower .van-hairline--top-bottom::after {
+  /* left: -330px;
+  right: -330px; */
+  border-color: #E5E5E5;
+}
+/* 性别 begin */
+.gender {
+  background-color: #fff;
+  font-size: 30px;
+  line-height: 88px;
+  padding: 10px 20px;
+}
+.gender .gender-txt {
+  font-size: 30px;
+  font-weight: 600;
+}
+.gender .van-radio-group {
+  display: flex;
+  flex-direction: row;
+}
+.gender .van-radio-group .van-radio {
+  margin-right: 50px;
+}
+/* 性别 end */
+.iActionsheet .van-actionsheet__item {
+  height: 88px;
+  line-height: 88px;
+  font-size: 30px;
+}
+.iButton {
+  margin: 30px 0;
+}
+.iButton .van-button--large {
+  height: 88px;
+  line-height: 88px;
+  border-radius: 10px;
+}
+.iButton .van-button--large .van-button__text {
+  font-size: 30px;
+}
+
+.choiceTeam::after{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  content: "";
+  -webkit-transform: scaleY(0.5);
+  transform: scaleY(0.5);
+  background-color: #f6f8fa;
+}
+
+/* 使用期限 */
+.glen{
+  height: 88px;
+  line-height: 88px;
+  background: #f6f8fa;
+  font-size: 30px;
+  padding: 0 20px;
+  font-weight: 600;
+}
+</style>

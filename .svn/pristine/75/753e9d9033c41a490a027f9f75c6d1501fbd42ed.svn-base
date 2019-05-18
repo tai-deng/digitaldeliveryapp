@@ -1,0 +1,466 @@
+<!-- MaterialPurchasing物资采购 -->
+<template>
+ <div class='container-material-purchasing' >
+ <div class='wrapper' id="pur_wrapper">
+    <!-- 头部 -->
+     <van-nav-bar
+        title="范围管理"
+        right-text="按钮"
+        left-arrow
+        @click-left="onClickLeft"
+        @click-right="onClickRight"
+      >
+      <div class="nav_right" slot="right"> <img src="../../../assets/imgs/screen.png" alt="" /> </div>
+     </van-nav-bar>
+      <!--  -->
+    <!-- tab栏 -->
+    <van-tabs v-model="active" :line-width="186" :line-height="3">
+      <van-tab class="purchasing_table_list" title="物资采购总览">
+
+         <!-- 采购列表 -->
+          <el-table
+            :data="purchase_tableData"
+            style="width: 100%">
+            <el-table-column
+              prop="itemName"
+              label="物资名称"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="constructionBudget"
+              label="施工预算量"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="pro_total"
+              label="采购总量">
+            </el-table-column>
+             <el-table-column
+              prop="stock"
+              label="库存">
+            </el-table-column>
+             <el-table-column
+              prop="overstep"
+              label="节超">
+            </el-table-column>
+          </el-table>
+
+      </van-tab>
+      <van-tab title="物资采购分析">
+        <div class="purcharsing_analysis">
+          <div class="purcharsing_analysis_item">
+            <div class="anay_title">
+              <div class="title_icon"></div>
+              <div class="title_text">C20混凝土</div>
+            </div>
+            <div class="anay_content_first"></div>
+          </div>
+          <div class="purcharsing_analysis_item"> 
+            <div class="anay_title">
+              <div class="title_icon"></div>
+              <div class="title_text">材料出入库情况</div>
+            </div>
+            <div class="anay_content_second">
+                <!-- 材料出入库情况 -->
+              <el-table
+                :data="table_data"
+                :span-method="arraySpanMethod"
+                >
+                <el-table-column
+                  
+                  label="入库"
+                  >
+                  <el-table-column
+                  prop="in_time"
+                  label="时间"
+                  >
+                  </el-table-column>
+                  <el-table-column
+                  prop="in_count"
+                  label="数量"
+                  >
+                  </el-table-column>
+                </el-table-column>
+                 <el-table-column
+                  label="出库"
+                  >
+                  <el-table-column
+                  prop="out_time"
+                  label="时间"
+                  >
+                  </el-table-column>
+                  <el-table-column
+                  prop="out_count"
+                  label="数量"
+                 >
+                  </el-table-column>
+                </el-table-column>
+                <el-table-column
+                prop="stock"
+                label="库存">
+                </el-table-column>
+                <el-table-column 
+                prop="overstep"
+                label="节超">
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+
+        </div>
+      </van-tab>
+    </van-tabs>
+
+ </div>
+ </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+ data() {
+   return {
+      sel_show: false,
+      active: 0,
+      activeNames: ['0'],
+      // 入库出库列表数据
+      table_data: [{
+          in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }, 
+        {
+          in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }, 
+        {
+          in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }, 
+        {
+         in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }, 
+        {
+          in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }, 
+        {
+          in_time: '2018.05.01',
+          in_count: '10.00m³',
+          out_time: '2018.05.01',
+          out_count: '10.00m³',
+          stock: '14.00m³',
+          overstep: '14.00m³'
+        }],
+        // 采购物资列表数据
+        purchase_tableData: [{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          }, {
+           itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          }, {
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          }, {
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          },{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          },{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          },{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          },{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          },{
+            itemName: 'C20混凝土',
+            constructionBudget: '44.00m³',
+            pro_total: '50.00m³',
+            stock: '10.00m³',
+            overstep: '14.00m³'
+          }]
+        }
+    },
+    methods: {
+         // 返回按钮
+     onClickLeft() {
+      this.$router.go(-1)
+
+    },
+    // 筛选按钮
+    onClickRight() {
+      this.sel_show = !this.sel_show;
+    },
+
+    // 重置函数 
+    resetFunc() {
+      console.log("chongzhi")
+    },
+    //确认函数 
+    recordCheck() {
+      console.log('queren')
+    },
+    // 表格合并单元格
+    arraySpanMethod({ columnIndex }) {
+       
+          if (columnIndex === 5) {
+            return [6, 1];
+          } else if (columnIndex === 4) {
+            return [6, 1];
+          }
+        }
+      }
+    
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-material-purchasing
+  width 100%
+  height 100%
+</style>
+<style lang="stylus" rel='stylesheet/stylus'>
+@import '../../../assets/stylus/variable'
+  #pur_wrapper {
+    //头部样式
+    .van-nav-bar {
+      width: 100%;  
+      height: 128px;
+      border-bottom: 1px solid #E5E5E5;
+
+      .van-nav-bar__title,
+      .van-nav-bar__left,
+      .van-nav-bar__right {
+        color: #000;
+        height: 87px;
+        padding-top: 41px;
+        line-height: 87px;
+        font-size $font-size-title;
+        z-index 10000;
+      }
+      .van-icon-arrow-left {
+        color: #000 ;
+        font-size $font-size-title;
+      }
+      .van-nav-bar__text {
+        color: #000;
+        font-size $font-size-title;
+      }
+      .nav_right {
+        img {
+            width: 41px;
+          height 35px;
+          
+        }
+      }
+    }
+      // tab栏样式
+  .van-tabs {
+      height 100%;
+      .van-tabs__content{
+        padding-top: 2px;
+      }
+      .van-tabs__wrap {
+        height 88px;
+        .van-tabs__line{
+          background-color $color-bgc-1;
+
+        }
+      .van-tab {
+      line-height 88px;
+      color: #333;
+      font-size: $font-size-28;
+      }
+      .van-tab--active {
+        color: #5892FF 
+      }
+    }
+
+    //tab栏内容样式
+    .van-tabs__content {
+      
+      height 100%;
+      .van-tab__pane {
+        height 100%;
+        
+       
+         
+          .purcharsing_analysis{
+            .purcharsing_analysis_item {
+              padding-top: 25px;
+              background-color #fff;
+              .anay_title {
+                padding: 0 24px;
+                height 55px;
+                border-bottom: 1px solid #E9ECF1;
+                background-color #fff;
+                .title_text{
+                  margin-left: 19px;
+                  height:29px;
+                  float left
+                  font-size:30px;
+                  font-family:PingFang-SC-Medium;
+                  font-weight:bold;
+                  color:#333;
+                }
+                .title_icon {
+                  float left
+                  height 29px;
+                  width: 8px;
+                  background-color #5A92FF;
+                  
+                }
+              }
+              .anay_content_first {
+                background-color #fff;
+                width: 100%;
+                height: 491px;
+              }
+              .anay_content_second {
+                background-color #fff;
+                width:100%;
+                height 484px;
+              }
+            }
+            .purcharsing_analysis_item:last-child {
+              background-color #E9ECF1;
+              .anay_title {
+              padding-top: 19px;
+
+              }
+            }
+          }
+        
+      }
+    }
+  }
+  .van-tabs--line {
+    padding-top: 88px;
+  }
+
+    //搜索模块样式
+  .search_model {
+    position: absolute;
+    top: 233px;
+    left:24px;
+    z-index 10;
+    .search_text {
+      float left;
+      width: 564px;
+      height 64px;
+      padding-left: 65px;
+      color: #999999;
+      background-color #F5F5F5;
+      box-sizing: border-box;
+
+    }
+    .search_btn {
+      float: right;
+      width: 120px;
+      height 64px;
+      color: #fff;
+      background-color #5892FF;
+      border: none;
+      border-radius: 8px;
+    }
+  }
+  // 采购出库入库样式
+
+  .el-table__header {
+  //   width: 100% !important;
+        
+        .is-group {
+          tr,
+          th {
+            height 66px;
+            color: #fff;
+            text-align: center;
+            background-color #5892FF;
+          }
+        }
+  }
+  .el-table__body {
+  //   width: 100% !important;
+      td {
+            height 66px;
+            // color: #fff;
+            text-align: center;
+           
+          }
+
+  }
+
+  //物资采购样式
+  .purchasing_table_list {
+    .el-table {
+      .el-table__header-wrapper {
+        tr {
+          th {
+            height 60px;
+            background-color #5892FF
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+          }
+        }
+      }
+      .el-table__body-wrapper {
+        tr {
+          td {
+            font-size: 24px;
+            color: #333;
+          }
+        }
+      }
+    }
+  }
+  }
+</style>

@@ -1,0 +1,591 @@
+<!-- 物资采购详情 purchaseDetails -->
+<template>
+  <div class="container-purchaseDetails">
+    <van-nav-bar title="物资采购详情" left-arrow border @click-left="onClickLeft"></van-nav-bar>
+    <div class="content">
+      <van-cell-group>
+        <div class="purchaseDetails-type flex-between item-s">
+          <div class="purchaseDetails-type-l flex">
+            <div class="purchaseDetails-type-l-name text-font-have">采购批次：</div>
+            <div
+              class="purchaseDetails-type-l-v"
+              :class="[data.Code?'text-font-have':'text-font-none']"
+            >{{data.Code}}</div>
+          </div>
+        </div>
+
+        <div class="purchaseDetails-type flex-between item-s">
+          <div class="purchaseDetails-type-l flex">
+            <div class="purchaseDetails-type-l-name text-font-have">申请人：</div>
+            <div
+              class="purchaseDetails-type-l-v"
+              :class="[data.ApplyPersonName?'text-font-have':'text-font-none']"
+            >{{data.ApplyPersonName}}</div>
+          </div>
+        </div>
+
+        <div class="purchaseDetails-type flex-between item-s">
+          <div class="purchaseDetails-type-l flex">
+            <div class="purchaseDetails-type-l-name text-font-have">发起时间：</div>
+            <div
+              class="purchaseDetails-type-l-v"
+              :class="[data.dCreateTime?'text-font-have':'text-font-none']"
+            >{{data.dCreateTime}}</div>
+          </div>
+        </div>
+
+        <div class="purchaseDetails-type flex-between item-s">
+          <div class="purchaseDetails-type-l flex">
+            <div class="purchaseDetails-type-l-name text-font-have">需用时间：</div>
+            <div
+              class="purchaseDetails-type-l-v"
+              :class="[data.DemandTime?'text-font-have':'text-font-none']"
+            >{{data.DemandTime}}</div>
+          </div>
+        </div>
+      </van-cell-group>
+
+      <div style="height:19px"></div>
+      <div class="materials_table">
+        <el-table
+          style="width:100%;font-size:30px;box-sizing:border-box;"
+          :data="data.listItems"
+          :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+        >
+          <el-table-column prop="TaskName" label="任务名称" align="center"></el-table-column>
+          <el-table-column prop="ResourseName" label="物资名称" align="center"></el-table-column>
+          <el-table-column prop="Spec" label="规格型号" align="center"></el-table-column>
+          <el-table-column prop="AdjustBOQ" label="施工预算量" align="center"></el-table-column>
+          <el-table-column prop="PurchaseNum" label="已采购量" align="center"></el-table-column>
+          <el-table-column prop="ThisPurchaseNum" label="本次采购量" align="center"></el-table-column>
+          <el-table-column prop="Unit" label="单位" align="center" width="50"></el-table-column>
+        </el-table>
+      </div>
+
+      <div class="project-title flex">工作流程</div>
+
+      <div class="flow-content">
+        <div class="flow-content-item" v-for="(item,index) in data.listFlow" :key="index">
+          <div
+            class="flow-content-item-l flex-row"
+            :class="[active == index?'action-b':'action-a']"
+          >
+            {{index+1}}
+            <div
+              class="line"
+              :class="[active == index? 'line-b':'line-a']"
+              v-if="index !== data.listFlow.length-1"
+            ></div>
+          </div>
+
+          <div class="flow-content-item-c">
+            <div class="flow-content-item-c-w flex">
+              <div
+                class="flow-content-item-c-l flex-row flow-content-item-border"
+              >{{item.PersonName}}</div>
+              <div class="flow-content-item-c-l flex-row flow-content-item-border">{{item.OrgName}}</div>
+              <div class="flow-content-item-c-l flex-row">{{item.DeptName}}</div>
+            </div>
+            <div class="flow-content-item-c-triangle">
+              <div class="flow-content-item-c-triangle-b"></div>
+            </div>
+            <div class="flow-content-item-c-pic flex-row">
+              <template v-if="item.listAuthPhoto">
+                <img :src="'http://47.112.21.206:8006'+item.listAuthPhoto">
+              </template>
+              <template v-else-if="(WorkStatus == 3 || WorkStatus == 0)&& isMe">
+                <div class="pic-warp flex-row" @click="upLoadImg">
+                  <img src="./user_assets/imgs/up-proof.png">
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="flow-content-item-r"></div>
+        </div>
+      </div>
+
+      <div class="btn-warp" v-if="isMe">
+        <div class="btn-check" v-if="WorkStatus == 3">
+          <van-button
+            style="background: rgba(229, 75, 75, 1);"
+            square
+            type="primary"
+            block
+            @click="onReceive"
+          >拒收</van-button>
+          <van-button
+            style="background: rgba(90,147,255,1);"
+            square
+            type="primary"
+            block
+            @click="onReceive"
+          >接收</van-button>
+        </div>
+        <van-button
+          class="btn"
+          square
+          type="primary"
+          block
+          @click="onPrimary"
+          v-if="WorkStatus == 0"
+        >确认完成</van-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {
+  getPurchaseListDetil,
+  purchaseCheck,
+  purchasePutaway
+} from "../../assets/js/scopeManage.js";
+export default {
+  data() {
+    return {
+      // billsType:2,  // 0为未导入 1为施工图清单 2.全费用清单 3.构件生成清单
+      // labelText:'', // 资源名称 项目名称
+      active: 0,
+      isMe: false,
+      WorkStatus: 4, // 0 待接收  3进行中  4完成
+      userID: localStorage.getItem("userId"), //用户ID
+      projectid: localStorage.getItem("projectid"),
+      data: [],
+      par: {
+        Priority: "",
+        OrgId: "",
+        DepId: "",
+        Person: "",
+        Status: 1,
+        ID: "",
+        WorkFlowId: ""
+      },
+      photoList: [], //现场照片
+      dialogImageUrl2: "", //上传凭证
+      dialogVisible2: false //上传凭证图片列表
+    };
+  },
+  created() {
+    // 获取清单类型
+    this.getDetil();
+  },
+  methods: {
+    // 获取详情
+    getDetil() {
+      getPurchaseListDetil(
+        {
+          ID: this.$route.query.id
+        },
+        res => {
+          if (res.StatusCode == 200) {
+            // 待接收 进行中 完成
+            this.active = 0;
+            res.Result.dCreateTime = res.Result.dCreateTime
+              ? require("moment")(res.Result.dCreateTime).format("YYYY/MM/DD")
+              : "/";
+            res.Result.DemandTime = res.Result.DemandTime
+              ? require("moment")(res.Result.DemandTime).format("YYYY/MM/DD")
+              : "/";
+            res.Result.listFlow.forEach((element, index) => {
+              if (
+                this.active == "" &&
+                element.ID == res.Result.CurrentStepIndex
+              ) {
+                this.active = index;
+                this.WorkStatus = element.Status;
+                if (this.userID == element.Person) {
+                  this.isMe = true;
+                } else {
+                  this.isMe = false;
+                }
+                this.par = {
+                  Priority: element.Priority,
+                  OrgId: element.OrgId,
+                  DepId: element.DepId,
+                  Person: element.Person,
+                  ID: element.ID,
+                  MasterID: res.Result.ID
+                };
+              }
+            });
+            this.data = res.Result;
+          }
+        }
+      );
+    },
+
+    // 返回上一页
+    onClickLeft() {
+      this.$router.back(-1);
+    },
+
+    // 确认完成
+    onPrimary() {
+      let par = Object.assign(this.par, {
+        listAuthPhoto: this.photoList,
+        Status: 4
+      });
+      purchaseCheck(this, par);
+    },
+
+    // 接收/拒收
+    onReceive(flag) {
+      // 接收
+      let par = "";
+      if (flag == 1) {
+        par = Object.assign(this.par, {
+          listAuthPhoto: this.photoList,
+          Status: 3
+        });
+      } else {
+        par = Object.assign(this.par, {
+          listAuthPhoto: this.photoList,
+          Status: 2
+        });
+      }
+      purchasePutaway(this, par);
+    },
+
+    // 上传照片
+    upLoadImg() {
+      console.log("upload");
+    }
+  }
+};
+</script>
+<style scope>
+.container-purchaseDetails {
+  width: 100vw;
+  height: 100vh;
+}
+.content {
+  height: calc(100vh - 90px);
+  width: 100vw;
+  overflow-y: auto;
+}
+.content .el-table__empty-text {
+  font-size: 15px;
+}
+.container-purchaseDetails .p15 .van-cell .van-cell__title {
+  max-width: 1.7rem;
+}
+.btn-check {
+  display: flex;
+  justify-content: space-between;
+}
+.btn-check button {
+  width: 330px;
+  height: 44px;
+  border-radius: 4px;
+}
+
+/* 表格样式更改 */
+.container-purchaseDetails .materials_table .el-table .cell {
+  height: 0.78rem;
+  line-height: 0.78rem;
+  font-size: 30px;
+}
+.container-purchaseDetails .materials_table .el-table .table_input {
+  border: 0.04rem solid #eeeeee;
+}
+.container-purchaseDetails .materials_table_largin .el-table .cell {
+  height: 0.78rem;
+  line-height: 0.78rem;
+  font-size: 30px;
+}
+.container-purchaseDetails .materials_table_largin .el-table .table_input {
+  border: 0.04rem solid #eeeeee;
+}
+.container-purchaseDetails .materials_table_largin {
+  width: 100%;
+  overflow: scroll;
+}
+</style>
+
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+@import './user_assets/base.css';
+
+.mt20 {
+  margin-top: 0.27rem;
+}
+
+.container-purchaseDetails {
+  width: 100%;
+  height: 100%;
+  background: rgba(246, 248, 250, 1);
+
+  .m20 {
+    margin: 0 0.32rem;
+  }
+
+  .p15 {
+    padding: 0.4rem 0.32rem !important;
+  }
+
+  .btn-warp {
+    padding: 0.4rem 0.32rem;
+    background: rgba(246, 248, 250, 1);
+  }
+
+  .group-warp {
+    padding: 0 0.32rem;
+
+    .item-s-b {
+      height: 1.18rem;
+      line-height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(51, 51, 51, 1);
+      border-bottom: 0.017rem solid #E5E5E5;
+    }
+  }
+
+  .content {
+    .flow-content {
+      padding: 0 0.32rem;
+      background: rgba(246, 248, 250, 1);
+
+      .flow-content-item {
+        padding-top: 0.4rem;
+        display: flex;
+
+        .action-a {
+          background: rgba(221, 221, 221, 1);
+        }
+
+        .action-b {
+          background: rgba(90, 147, 255, 1);
+        }
+
+        .flow-content-item-l {
+          width: 0.53rem;
+          height: 0.53rem;
+          border-radius: 50%;
+          font-size: 30px;
+          font-family: SourceHanSansCN-Medium;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 1);
+          position: relative;
+          margin-right: 0.55rem;
+          margin-top: 0.33rem;
+
+          .line {
+            position: absolute;
+            width: 0.05rem;
+            background-color: #979797;
+            top: 0.64rem;
+            left: 0.23rem;
+          }
+
+          .line-a {
+            height: 0.83rem;
+          }
+
+          .line-b {
+            height: 4.5rem;
+          }
+        }
+
+        .flow-content-item-c {
+          flex: 1;
+          font-size: 30px;
+          font-family: SourceHanSansCN-Medium;
+          font-weight: 500;
+          color: rgba(51, 51, 51, 1);
+          background: rgba(255, 255, 255, 1);
+          box-shadow: 0px 0.0133rem 0.11rem 0px rgba(220, 226, 237, 1);
+          border-radius: 0.0532rem;
+          position: relative;
+
+          .flow-content-item-c-w {
+            height: 1.18rem;
+          }
+
+          .flow-content-item-c-pic {
+            padding-bottom: 0.27rem;
+
+            .pic-warp {
+              width: 6.69rem;
+              height: 3.86rem;
+              background: rgba(238, 238, 238, 1);
+
+              img {
+                width: 0.67rem;
+                height: 0.67rem;
+                display: block;
+              }
+            }
+
+            img {
+              width: 6.69rem;
+              height: 3.86rem;
+              display: block;
+            }
+          }
+
+          .flow-content-item-c-triangle {
+            top: 0;
+            left: -0.3rem;
+            position: absolute;
+            height: 1.18rem;
+            width: 0.3rem;
+            overflow: hidden;
+
+            .flow-content-item-c-triangle-b {
+              position: absolute;
+              transform: rotate(45deg) !important;
+              -ms-transform: rotate(45deg) !important;
+              -moz-transform: rotate(45deg) !important;
+              -webkit-transform: rotate(45deg) !important;
+              -o-transform: rotate(45deg) !important;
+              background: rgba(255, 255, 255, 1);
+              box-shadow: 0px 1px 4px 0px rgba(220, 226, 237, 1);
+              height: 0.4rem;
+              width: 0.4rem;
+              top: 0.39rem;
+              left: 0.15rem;
+            }
+          }
+
+          .flow-content-item-c-l {
+            flex: 1;
+          }
+
+          .flow-content-item-border {
+            border-right: 0.03rem dashed #979797;
+          }
+        }
+
+        .flow-content-item-r {
+          margin-left: 1.06rem;
+        }
+      }
+    }
+
+    .van-cell {
+      padding: 0;
+    }
+
+    .uploader {
+      background-color: rgba(246, 248, 250, 1);
+      padding: 0 0.32rem;
+
+      .van-uploader {
+        width: 2.66rem;
+        height: 2.66rem;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 0.11rem;
+        border: 0.027rem solid rgba(189, 193, 198, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.266rem;
+
+        img {
+          width: 2.66rem;
+          height: 2.66rem;
+          display: block;
+        }
+      }
+
+      .uploader-tip {
+        font-size: 26px;
+        font-family: SourceHanSansCN-Regular;
+        font-weight: 400;
+        color: rgba(153, 153, 153, 1);
+        align-self: flex-end;
+        margin-left: 0.16rem;
+      }
+    }
+
+    .purchaseDetails-type-arrow img {
+      width: 0.24rem;
+      height: 0.43rem;
+      display: block;
+    }
+
+    .flow-work {
+      font-size: 26px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(153, 153, 153, 1);
+      height: 2.13rem;
+      background: rgba(255, 255, 255, 1);
+      padding: 0 0.32rem;
+
+      img {
+        width: 0.8rem;
+        height: 0.76rem;
+        display: block;
+        margin-bottom: 0.16rem;
+      }
+    }
+
+    .van-button--primary {
+      height: 1.18rem;
+      background: rgba(90, 147, 255, 1);
+      border-radius: 0.15rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Medium;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 1);
+    }
+
+    .item-s {
+      height: 1.18rem;
+      line-height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(51, 51, 51, 1);
+      border-bottom: 0.017rem solid #E5E5E5;
+      margin: 0 0.32rem;
+    }
+
+    .project-title {
+      font-size: 30px;
+      font-family: SourceHanSansCN-Medium;
+      font-weight: 500;
+      color: rgba(51, 51, 51, 1);
+      height: 1.18rem;
+      padding: 0 0.32rem;
+      background-color: rgba(246, 248, 250, 1);
+    }
+
+    .project-title-r {
+      height: 1.18rem;
+      font-size: 30px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(90, 146, 255, 1);
+      line-height: 1.18rem;
+    }
+
+    .project-content {
+      background-color: #fff;
+    }
+  }
+
+  .text-font-have {
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+  }
+
+  .text-font-none {
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .van-popup .van-actionsheet__item {
+    height: 1.18rem !important;
+    line-height: 1.18rem !important;
+    font-size: 30px;
+  }
+}
+</style>

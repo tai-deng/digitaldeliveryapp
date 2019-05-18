@@ -1,0 +1,724 @@
+<!-- Range Management 范围管理 -->
+<template>
+  <div class="container-material-purchasing">
+    <div class="wrapper" id="wrapper">
+      <!-- 头部 -->
+      <van-nav-bar
+        title="范围管理"
+        right-text="按钮"
+        left-arrow
+        @click-left="onClickLeft"
+        @click-right="onClickRight"
+      >
+        <div class="nav_right" slot="right">
+          <img src="../../../assets/imgs/screen.png" alt>
+        </div>
+      </van-nav-bar>
+      <!--  -->
+      <!-- tab栏 -->
+      <van-tabs v-model="active" :line-width="186" :line-height="3" @change="onActive">
+        <van-tab title="采购列表">
+          <!-- 采购列表 -->
+          <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+            <div class="buy_lists">
+              <ul>
+                <li v-for="(item,index) in rangeList" :key="index">
+                  <div class="lis_left">
+                    <span>采购批次：{{item.Code}}</span>
+                    <span>发起日期:{{item.dCreateTime}}</span>
+                    <span>需用日期:{{item.DemandTime}}</span>
+                  </div>
+
+                  <div class="lis_right" @click="onPurchase">
+                    <button>采购详情</button>
+                    <span>申请人:{{item.ApplyPersonName}}</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </van-pull-refresh>
+        </van-tab>
+        <van-tab title="变更列表">
+          <van-row justify="space-between">
+            <van-col span="6">编码</van-col>
+            <van-col span="2">楼栋</van-col>
+            <van-col span="4">专业</van-col>
+            <van-col span="2">楼层</van-col>
+            <van-col span="5">变更主题</van-col>
+            <van-col span="5">截止日期</van-col>
+          </van-row>
+          <div class="change_lists">
+            <ul>
+              <div class="change_content">
+                <div class="change_con_list active">
+                  <div class="listHeader">待接收（{{dataIng.length}}）</div>
+                  <van-row v-for="(item, index) in dataIng" :key="index" justify="space-between">
+                    <van-col span="6">{{item.Code}}</van-col>
+                    <van-col span="2">{{item.Building}}</van-col>
+                    <van-col span="4">{{item.Specialty}}</van-col>
+                    <van-col span="2">{{item.Floor}}</van-col>
+                    <van-col span="5">{{item.Theme}}</van-col>
+                    <van-col span="5">{{item.EndTime}}</van-col>
+                  </van-row>
+                </div>
+              </div>
+              <div class="change_content">
+                <div class="change_con_list">
+                  <div class="listHeader">处理中（{{dataHandle.length}}）</div>
+                  <van-row v-for="(item, index) in dataHandle" :key="index">
+                    <van-col span="6">{{item.Code}}</van-col>
+                    <van-col span="2">{{item.Building}}</van-col>
+                    <van-col span="4">{{item.Specialty}}</van-col>
+                    <van-col span="2">{{item.Floor}}</van-col>
+                    <van-col span="5">{{item.Theme}}</van-col>
+                    <van-col span="5">{{item.EndTime}}</van-col>
+                  </van-row>
+                </div>
+              </div>
+              <div class="change_content">
+                <div class="change_con_list">
+                  <div class="listHeader">已处理（{{dataOver.length}}）</div>
+                  <van-row v-for="(item, index) in dataOver" :key="index">
+                    <van-col span="6">{{item.Code}}</van-col>
+                    <van-col span="2">{{item.Building}}</van-col>
+                    <van-col span="4">{{item.Specialty}}</van-col>
+                    <van-col span="2">{{item.Floor}}</van-col>
+                    <van-col span="5">{{item.Theme}}</van-col>
+                    <van-col span="5">{{item.EndTime}}</van-col>
+                  </van-row>
+                </div>
+              </div>
+            </ul>
+          </div>
+        </van-tab>
+      </van-tabs>
+      <!-- 搜索模块 -->
+      <div class="search_model">
+        <van-icon class="search_icon" name="search"></van-icon>
+        <input class="search_text" type="text" value="楼栋、专业、楼层、资源" v-model="options.Name">
+        <button class="search_btn" @click.prevent="searchFunc">搜索</button>
+      </div>
+
+      <!-- 筛选内容 -->
+      <div class="select_layer" v-show="sel_show">
+        <van-collapse v-model="activeNames">
+          <van-collapse-item title="楼栋" name="1">
+            <div slot="icon">
+              <img class="icon_down" src="../../../assets/imgs/select_down.png">
+            </div>
+            <ul>
+              <li
+                v-for="(item,index) in BuildNameList"
+                :key="index"
+                @click.stop="onSelBuild(item)"
+              >{{item.text}}</li>
+            </ul>
+          </van-collapse-item>
+          <van-collapse-item title="专业" name="2">
+            <div slot="icon">
+              <img class="icon_down" src="../../../assets/imgs/select_down.png">
+            </div>
+            <ul>
+              <li
+                v-for="(item,index) in SpecialtyList"
+                :key="index"
+                @click.stop="onSelSpec(item)"
+              >{{item.text}}</li>
+            </ul>
+          </van-collapse-item>
+          <van-collapse-item title="楼层" name="3">
+            <div slot="icon">
+              <img class="icon_down" src="../../../assets/imgs/select_down.png">
+            </div>
+            <ul>
+              <li
+                v-for="(item,index) in FloorbyList"
+                :key="index"
+                @click.stop="onSelFloor(item)"
+              >{{item.text}}</li>
+            </ul>
+          </van-collapse-item>
+        </van-collapse>
+        <div class="btn">
+          <button class="reset" @click=" resetFunc">重置</button>
+          <div class="line"></div>
+          <button class="check" @click="recordCheck">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {
+  getPurchaseList,
+  getBuildList,
+  getSpecialtyList,
+  getFloorList,
+  getChangeList,
+  clearSel
+} from "../../../assets/js/scopeManage.js";
+
+export default {
+  data() {
+    return {
+      options: {
+        BuildName: "",
+        Specialty: "",
+        Floor: "",
+        Name: "",
+        page: 1,
+        rows: 5
+      },
+      rangeList: [],
+      isLoading: false,
+      ispull: true,
+      BuildNameList: [], // 楼栋下拉
+      SpecialtyList: [], // 专业下拉
+      FloorbyList: [], // 楼层下拉
+      sel_show: false,
+      active: 0,
+      activeNames: ["0"],
+
+      ingCurrentPage: 1,
+      handleCurrentPage: 1,
+      overCurrentPage: 1,
+      //变更数据
+      dataIng: [],
+      dataHandle: [],
+      dataOver: []
+    };
+  },
+  created() {
+    getPurchaseList(this);
+    getBuildList(this);
+  },
+  methods: {
+    // tab
+    onActive() {
+      this.options = {
+        BuildName: "",
+        Specialty: "",
+        Floor: "",
+        Name: "",
+        page: 1,
+        rows: 5
+      };
+      this.SpecialtyList = []; // 专业下拉
+      this.FloorbyList = [];
+      if (this.active == 1) {
+        this.dataIng = [];
+        this.dataHandle = [];
+        this.dataOver = [];
+
+        getChangeList(this, 0);
+        getChangeList(this, 1);
+        getChangeList(this, 2);
+      } else {
+        this.rangeList = [];
+        getPurchaseList(this);
+      }
+    },
+    // 楼层选项
+    onSelFloor(e) {
+      this.options.Floor = e.text;
+    },
+    // 专业选项
+    onSelSpec(e) {
+      this.options.Specialty = e.text;
+    },
+    // 楼栋选项
+    onSelBuild(e) {
+      this.options.BuildName = e.text;
+    },
+    // 下拉加载
+    onRefresh() {
+      if (this.ispull) {
+        this.options.page = this.options.page += 1;
+        getPurchaseList(this);
+      } else {
+        let timer = setTimeout(() => {
+          this.isLoading = false;
+          clearTimeout(timer);
+          this.$message({
+            type: "warning",
+            message: "已没有更多数据",
+            center: "true"
+          });
+        }, 200);
+      }
+    },
+    // 返回按钮
+    onClickLeft() {
+      this.$router.go(-1);
+    },
+    // 筛选按钮
+    onClickRight() {
+      this.sel_show = !this.sel_show;
+    },
+    // 重置函数
+    resetFunc() {
+      this.options = {
+        BuildName: "",
+        Specialty: "",
+        Floor: "",
+        Name: "",
+        page: 1,
+        rows: 5
+      };
+    },
+    // 确认选择
+    recordCheck() {
+      this.options.page = 1;
+      if (this.active == 1) {
+        this.dataIng = [];
+        this.dataHandle = [];
+        this.dataOver = [];
+        getChangeList(this, 0);
+        getChangeList(this, 1);
+        getChangeList(this, 2);
+      } else {
+        this.rangeList = [];
+        getPurchaseList(this);
+      }
+    },
+    //搜索函数
+    searchFunc() {
+      this.rangeList = [];
+      this.options.page = 1;
+      getPurchaseList(this);
+    },
+    // 变更数据处理
+    pushData(data, func) {
+      data.Detiel.forEach(element => {
+        let item = {
+          Code: element.Code,
+          Building: element.Building ? element.Building : "/",
+          Specialty: element.Specialty ? element.Specialty : "/",
+          Floor: element.Floor ? element.Floor : "/",
+          Theme: element.Theme ? element.Theme : "/",
+          EndTime: element.EndTime
+            ? require("moment")(element.EndTime).format("YYYY/MM/DD")
+            : "/",
+          DoNum: element.DoNum + "/" + element.TotalDoNum,
+          ID: element.ID
+        };
+        func(item);
+      });
+    },
+
+    // 采购详情
+    onPurchase() {
+      this.$router.push({ path: "/purchaseDetails" });
+    }
+  },
+  watch: {
+    "options.BuildName"(val) {
+      if (val != "") {
+        clearSel(this, 1);
+        getSpecialtyList(this);
+      }
+    },
+    "options.Specialty"(val) {
+      if (val != "") {
+        clearSel(this, 2);
+        getFloorList(this);
+      }
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-material-purchasing {
+  width: 100%;
+  height: 100%;
+}
+
+.change_content .van-col {
+  overflow: hidden;
+}
+</style>
+<style lang="stylus" rel="stylesheet/stylus" >
+@import '../../../assets/stylus/variable';
+
+#wrapper {
+  width: 100%;
+  // height: 100%;
+  background-color: #fff;
+
+  // 头部样式
+  .van-nav-bar {
+    width: 100%;
+    height: 128px;
+    border-bottom: 1px solid #E5E5E5;
+
+    .van-nav-bar__title, .van-nav-bar__left, .van-nav-bar__right {
+      color: #000;
+      height: 87px;
+      padding-top: 41px;
+      line-height: 87px;
+      font-size: $font-size-title;
+      z-index: 10000;
+    }
+
+    .van-icon-arrow-left {
+      color: #000;
+      font-size: $font-size-title;
+    }
+
+    .van-nav-bar__text {
+      color: #000;
+      font-size: $font-size-title;
+    }
+
+    .nav_right {
+      img {
+        width: 41px;
+        height: 35px;
+      }
+    }
+  }
+
+  .van-tabs {
+    height: 100%;
+
+    .van-tabs__content {
+      padding-top: 88px;
+    }
+
+    .van-tabs__wrap {
+      height: 88px;
+
+      .van-tabs__line {
+        background-color: $color-bgc-1;
+      }
+
+      .van-tab {
+        line-height: 88px;
+        color: #5892FF;
+        font-size: $font-size-28;
+      }
+    }
+
+    // tab栏内容样式
+    .van-tabs__content {
+      height: 100%;
+
+      .van-tab__pane {
+        height: 100%;
+      }
+    }
+  }
+
+  .van-tabs--line {
+    padding-top: 88px;
+  }
+
+  .search_model {
+    position: absolute;
+    top: 233px;
+    left: 24px;
+    z-index: 10;
+
+    .search_icon {
+      position: absolute;
+      top: 20px;
+      left: 28px;
+      font-size: 34px;
+    }
+
+    .search_text {
+      float: left;
+      width: 7.52rem;
+      height: 64px;
+      padding-left: 65px;
+      color: #999999;
+      background-color: #F5F5F5;
+      font-size: 28px;
+      box-sizing: border-box;
+    }
+
+    .search_btn {
+      float: right;
+      width: 120px;
+      height: 64px;
+      color: #fff;
+      background-color: #5892FF;
+      border: none;
+      border-radius: 8px;
+    }
+  }
+
+  // 采购栏样式
+  .buy_lists {
+    background-color: #F5F5F5;
+    height: calc(100vh - 345px);
+    padding: 20px 24px;
+
+    ul {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding: 24px 20px;
+        box-sizing: border-box;
+        width: 702px;
+        height: 180px;
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0px 3px 7px 0px rgba(222, 234, 246, 0.75);
+        border-radius: 8px;
+
+        .lis_left {
+          span {
+            display: block;
+            font-size: $font-size-26;
+            color: #666666;
+          }
+
+          span:first-child {
+            font-size: $font-size-30;
+            margin-bottom: 33px;
+            color: #333333;
+          }
+
+          span:last-child {
+            margin-top: 15px;
+          }
+        }
+
+        .lis_right {
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+
+          button {
+            width: 180px;
+            height: 50px;
+            line-height: 50px;
+            font-size: $font-size-30;
+            color: #fff;
+            background: rgba(88, 146, 255, 1);
+            border: none;
+            border-radius: 8px;
+          }
+
+          span {
+            padding-top: 10px;
+            padding-left: 20px;
+            font-size: 24px;
+            color: #999999;
+            box-sizing: border-box;
+          }
+        }
+      }
+    }
+  }
+
+  // 变更
+  .change_lists {
+    background-color: #F5F5F5;
+    height: calc(100vh - 375px);
+
+    ul {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+
+  .select_layer {
+    position: fixed;
+    top: 126px;
+    right: 24px;
+    width: 352px;
+    box-sizing: border-box;
+    background-color: $color-bgc-2;
+    opacity: 0.9;
+    border-radius: 8px;
+    padding: 10px 20px;
+    z-index: 999;
+
+    .van-hairline--top-bottom::after {
+      border: none;
+    }
+
+    .van-hairline--top::after {
+      border-top: none;
+      border-bottom: 1px solid #737577;
+    }
+
+    .van-collapse {
+      max-height: 909px;
+      overflow-y: auto;
+    }
+
+    .van-collapse-item {
+      .van-collapse-item__title--expanded::after {
+        visibility: hidden;
+      }
+    }
+
+    .van-collapse-item:first-child {
+      border-bottom: 1px solid #737577;
+    }
+
+    .van-collapse-item__title {
+      height: 86px;
+      line-height: 86px;
+      height: 86px;
+      background-color: $color-bgc-2;
+
+      .van-cell__title {
+        font-size: 30px;
+        color: #fff;
+        text-align: left;
+      }
+
+      .van-cell__right-icon {
+        color: transparent;
+      }
+    }
+
+    .icon_down {
+      position: absolute;
+      top: 45px;
+      right: 30px;
+      width: 16px;
+      height: 11px;
+    }
+
+    .van-collapse-item__content {
+      pdding: 0;
+      background-color: $color-bgc-2;
+
+      .van-cell {
+        width: 100%;
+        background-color: $color-bgc-2;
+        color: #fff;
+      }
+
+      ul {
+        li {
+          height: 86px;
+          line-height: 86px;
+          height: 86px;
+          padding-left: 20px;
+          border-bottom: 1px solid #737577;
+        }
+
+        li:first-child {
+          background-color: #222934;
+          opacity: 0.9;
+        }
+      }
+    }
+
+    .btn {
+      width: 100%;
+      height: 88px;
+      padding: 19px 0;
+      box-sizing: border-box;
+
+      button {
+        width: 49%;
+        height: 50px;
+        line-height: 50px;
+        background-color: #222934;
+        color: #fff;
+        font-size: 30px;
+        text-align: center;
+        border: none;
+      }
+
+      .reset {
+        // border-right: 1px dashed #fff;
+      }
+
+      .line {
+        display: inline-block;
+        width: 0px;
+        height: 50px;
+        border-left: 2px dashed #fff;
+        vertical-align: top;
+      }
+    }
+  }
+
+  .select_layer:after {
+    position: absolute;
+    top: -0.379rem;
+    right: 0.186667rem;
+    content: '';
+    width: 0px;
+    height: 0px;
+    border: 15px solid transparent;
+    border-bottom: 15px solid $color-bgc-2;
+    z-index: 9999;
+  }
+
+  // 列表样式
+  .van-row {
+    text-align: center;
+    background-color: #5A92FF;
+    padding: 22px 0;
+    color: #FEFEFF;
+    font-size: 26px;
+    box-sizing: border-box;
+  }
+
+  .van-tabs__content {
+    .change_content {
+      .change_con_list {
+        .listHeader {
+          height: 50px;
+          line-height: 50px;
+          padding-left: 24px;
+          background: rgba(229, 238, 255, 1);
+          font-size: 24px;
+        }
+
+        .van-row {
+          position: relative;
+          background-color: #fff;
+          height: 78px;
+          // line-height: 56px;
+          color: #333333;
+          border-bottom: 1px solid #E5EEFF;
+        }
+
+        .van-row:last-child {
+          border-bottom: none;
+        }
+      }
+
+      // 左上角图标样式
+      .active {
+        .van-row:nth-child(2):before, .van-row:nth-child(3):before {
+          position: absolute;
+          top: 0;
+          left: 0;
+          content: '';
+          width: 0;
+          height: 0;
+          border: 28px solid transparent;
+          border-top: 28px solid #5A92FF;
+          border-left: 28px solid #5A92FF;
+        }
+
+        .van-row:nth-child(2):after, .van-row:nth-child(3):after {
+          position: absolute;
+          top: -10px;
+          left: 5px;
+          content: '滞';
+          font-size: 20px;
+          color: #fff;
+        }
+      }
+    }
+  }
+}
+</style>

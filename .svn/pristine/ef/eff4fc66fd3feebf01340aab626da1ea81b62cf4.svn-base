@@ -1,0 +1,74 @@
+
+<!-- 设置页面 Modify -->
+<template>
+  <div class="container-Modify">
+    <van-nav-bar title="个人信息" left-arrow border @click-left="onClickLeft"></van-nav-bar>
+    <van-cell-group>
+      <van-field v-model="post.cName" clearable input-align="right" label="姓名"/>
+      <div class="line"></div>
+      <van-field v-model="post.cPhone" clearable input-align="right" label="手机号"/>
+      <div class="line"></div>
+      <van-field v-model="post.cName" clearable input-align="right" label="部门"/>
+      <div class="line"></div>
+      <van-field v-model="post.cRoleName" clearable input-align="right" label="岗位"/>
+      <div class="line"></div>
+      <van-field v-model="post.WeChatNo" clearable input-align="right" label="微信号"/>
+      <div class="line"></div>
+      <van-field v-model="post.Email" clearable input-align="right" label="邮箱"/>
+    </van-cell-group>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+  data() {
+    return {
+      name: "长孙无忌",
+      phone: "15197266715",
+      department: "某某部门",
+      station: "某某岗位",
+      wechat: "li1234567890",
+      Email:'396232695@qq.com',
+
+      post:{},
+    };
+  },
+  created(){
+    var text=localStorage.getItem('loginUserInfo');
+    this.post=JSON.parse(text).loginUserInfo;
+    console.log(this.post);
+  },
+  methods: {
+    onClickLeft() {
+      this.$router.back(-1);
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+
+@import './user_assets/base.css';
+
+.container-Modify {
+  width: 100%;
+  height: 100%;
+  background: rgba(246, 248, 250, 1);
+
+  .line {
+    margin: 0 0.4rem 0 0.32rem;
+    height: 0.027rem;
+    background-color: #E5E5E5;
+  }
+
+  .van-cell {
+    height: 1.17rem;
+    background: rgba(255, 255, 255, 1);
+    font-size: 30px;
+    font-family: SourceHanSansCN-Regular;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+    align-items: center;
+    padding: 0 0.4rem 0 0.32rem;
+  }
+}
+</style>

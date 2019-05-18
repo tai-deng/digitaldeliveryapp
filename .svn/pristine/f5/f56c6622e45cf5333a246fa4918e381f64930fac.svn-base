@@ -1,0 +1,166 @@
+<!-- 我的发布 -->
+<template>
+ <div class='container-my-issue'>
+ <div class='wrapper'>
+   <van-nav-bar
+  :title="title"
+  left-arrow
+  @click-left="onClickLeft"
+/>
+<div class="tab">
+    <van-tabs v-model="active" swipeable>
+              <van-tab title="待接收">
+                <el-table :data="tableData" style="width: 100%">
+                  <el-table-column prop="building" label="楼栋" width="70px"></el-table-column>
+                  <el-table-column prop="name" label="任务名称"></el-table-column>
+                  <el-table-column prop="date" label="计划完成时间" width="120px"></el-table-column>
+                  <el-table-column  label="状态" width="70px">
+                    <template slot-scope="scope">
+                      <span :style="{'color':scope.row.state=='正常'?'#00C187':'#FD4C58'}">{{scope.row.state}}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </van-tab>
+              <van-tab title="进行中">内容 3</van-tab>
+              <van-tab title="已完成">内容 4</van-tab>
+            </van-tabs>
+</div>
+ </div>
+ </div>
+</template>
+
+<script type='textecmascript-6'>
+export default {
+ data() {
+   return {
+       title:'--',//页面标题
+active: 0,
+      tableData: [
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "滞后"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        },
+        {
+          building: "A1栋",
+          name: "3F主体结构",
+          date: "2019.01.01",
+          state: "正常"
+        }
+      ],
+   }
+ },
+ created(){
+   console.log(this.$route)
+   if(this.$route.query.id==0){
+     this.title = '消息中心'
+   }else if(this.$route.query.id == 1){
+       this.title = '我的发布'
+   }
+ },
+ methods:{
+     onClickLeft(){
+         this.$router.push({path:'/nav/to/index'})
+     }
+ }
+
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-my-issue
+  width 100%
+  height 100%
+</style>
+<style>
+.container-my-issue .van-nav-bar{
+  height: 88px;
+}
+.container-my-issue .van-nav-bar__title{
+      height: 88px;
+    line-height: 88px;
+    font-size:36px;
+font-family:PingFang-SC-Medium;
+font-weight:bold;
+color:rgba(51,51,51,1);
+}
+.container-my-issue .van-nav-bar .van-icon{
+  font-size: 44px;
+  color: #333333;
+  vertical-align:initial;
+  padding: 20px 40px 20px 0
+}
+</style>
+<style>
+/* 顶部表头 */
+.container-my-issue .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+/*tab切换栏*/
+.container-my-issue .van-tab span {
+  font-size: 30px;
+  line-height: 80px;
+}
+.container-my-issue .van-tabs--line .van-tabs__wrap {
+  height: 80px;
+}
+.container-my-issue .van-tabs--line .van-tabs__wrap {
+  color: #666;
+  position: fixed;
+  top: 88px !important;
+}
+.container-my-issue .van-tabs--line .van-tabs__wrap .van-tabs__nav {
+  background-color: #fff;
+}
+.container-my-issue .van-tab--active {
+  color: #5a92ff;
+}
+/* tab下边线 */
+.container-my-issue .van-hairline--top-bottom::after {
+  border-width: 0 0 2px 0;
+}
+.container-my-issue .van-tabs--line {
+  padding-top: 80px;
+}
+.container-my-issue .van-tabs__line {
+  height: 4px;
+  bottom: 19px;
+  width: 120px;
+  bottom: 21px;
+  background-color: #5a92ff;
+}
+/*表格*/
+.container-my-issue .el-table {
+  color: #333;
+  font-size: 24px;
+}
+.container-my-issue .el-table thead tr th {
+  background-color: #5892ff;
+  color: #fff;
+}
+.container-my-issue .el-table .cell {
+  line-height: 80px;
+      text-align: center;
+      font-size:28px;
+font-family:PingFang-SC-Medium;
+font-weight:500;
+}
+.container-my-issue .el-table th div {
+  vertical-align: middle;
+  color: #fff;
+}
+
+</style>

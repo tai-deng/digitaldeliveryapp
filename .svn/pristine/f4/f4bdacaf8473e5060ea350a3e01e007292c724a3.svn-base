@@ -1,0 +1,160 @@
+<!-- login登录 -->
+<template>
+ <div class='container-login'>
+ <div class='wrapper'>
+   <!-- logo和项目名 -->
+   <div class="logo">
+     <p><img class="logo-img" src="./imgs/logo.png" alt></p>
+     <p class="project-name">工程项目PM协同管理平台</p>
+   </div>
+
+   <div class="user-input">
+      <p class="user"><van-field v-model="username" placeholder="请输入用户名" /></p>
+      <p class="user"><van-field v-model="password" :type="isEye?'':'password'" placeholder="请输入用户密码"/>
+        <span><img  @click="onEye" :src="isEye?eyeIcons[1]:eyeIcons[0]" alt=""></span>
+      </p>
+   </div>
+
+   <div class="sub-but">
+     <el-button type="primary" class="sub" @click="onLogin" round>登陆</el-button>
+   </div>
+ </div>
+ </div>
+</template>
+
+<script type='textecmascript-6'>
+import {Login,GetLoginUserInfo} from '@/api/api.js'
+// import { constants } from 'crypto';
+export default {
+ data() {
+   return {
+     username:'',
+     password:'',
+     isEye:false,//是否显示密码
+     eyeIcons: [require('./imgs/noeye.png'),require('./imgs/eye.png')],//眼睛图标
+   }
+ },
+ created(){
+   this._initData()
+ },
+ methods:{
+   _initData(){
+     // TODO // 假数据，项目ID
+     localStorage.setItem('projectid','12345678') 
+   },
+   /**
+    * 隐藏显示密码事件
+    */
+   onEye(){
+     this.isEye = !this.isEye
+     console.log('是否显示密码')
+   },
+   /**登录 */
+   onLogin(){
+     if(this.username&&this.password){
+       this.Request(Login({LoginName:this.username,LoginPwd:this.password})).then(res=>{
+         console.log(res)
+         if(res.StatusCode===200){
+           console.log(res.Detiel[0])
+           localStorage.setItem('token',res.Detiel[0].access_token)
+           localStorage.setItem('bimface_token',res.Detiel[0].bimface_token)
+           localStorage.setItem("userId", res.Message);
+           //获取当前登录用户信息详情
+           this.Request(GetLoginUserInfo({curUserId:Number(res.Message)})).then(info=>{
+             console.log(info)
+             if(info.StatusCode===200){
+               localStorage.setItem('token',res.Detiel[0].access_token)
+                localStorage.setItem('bimface_token',res.Detiel[0].bimface_token)
+                localStorage.setItem("userId", res.Message);
+                localStorage.setItem("loginUserInfo",JSON.stringify(info.Detiel[0]) );
+               this.$router.push({path:'/nav/to/index'})
+               this.$message({type:'success',message:'欢迎，登陆成功！',center:'true'})
+             }else{
+               this.$message({type:'error',message:'获取用户信息失败',center:'true'})
+             }
+           })
+          
+         }else{
+          this.$message({type:'error',message:res.Message,center:'true'})
+         }
+       })
+       console.log(this.username,this.password) 
+     }else{
+       this.$message({type:'error',message:'帐号或密码不能为空',center:'true'})
+     }
+   }
+ }
+
+}
+
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+.container-login
+  width 100%
+  height 100%
+  background-image url('./imgs/bg.png')
+  background-repeat no-repeat
+  background-size 100% 100%
+  box-sizing border-box
+  .wrapper
+    width 610px
+    height 100%
+    margin 0 auto
+    .logo
+      text-align center
+      .logo-img
+        display inline-block
+        width:108px;
+        height:134px;
+        margin 0 auto
+        margin-top 116px
+      .project-name
+        font-size:30px;
+        font-family:SourceHanSansCN-Medium;
+        font-weight:500;
+        color:rgba(51,51,51,1);
+        line-height 30px
+        margin-top 30px
+    .user-input
+      margin-top 140px
+      .user
+        position relative
+        width 100%
+        border-bottom 1px solid rgba(230,230,230,1)
+        margin-top 90px
+        span 
+          img 
+            position absolute
+            right 0
+            top 0
+            width 36px
+            height 26px
+            padding: 15px;
+          
+    .sub-but
+      padding-top 98px
+      .sub
+        width 100%
+        height 94px
+</style>
+<style>
+.van-cell{
+  background-color: rgba(0,0,0,0)
+}
+.van-field__control{
+  font-size:30px;
+  font-family:SourceHanSansCN-Regular;
+  font-weight:bold;
+  color:rgba(153,153,153,1);
+}
+.el-button--primary{
+  font-size:36px;
+  font-family:SourceHanSansCN-Regular;
+  font-weight:bold;
+  color:rgba(255,255,255,1);
+}
+.el-button.is-round{
+  border-radius:47px;
+  background:rgba(90,147,255,1);
+}
+</style>

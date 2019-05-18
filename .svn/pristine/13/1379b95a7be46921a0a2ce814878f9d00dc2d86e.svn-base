@@ -1,0 +1,1041 @@
+<!-- materials材料出入库 -->
+<template>
+  <div class="container-materials">
+    <van-nav-bar title="材料出入库" @click-left="goBack" fixed :border="true" :z-index="100">
+      <span class="el-icon-arrow-left fontsize" slot="left"></span>
+    </van-nav-bar>
+    <div class="materials_header" style="margin-top:44px;margin-bottom:20px;">
+      <div class="materials_header_type">
+        <span>类型：</span>
+        <van-radio-group v-model="materialsType">
+          <van-radio name="1">入库</van-radio>
+          <van-radio name="2">出库</van-radio>
+        </van-radio-group>
+      </div>
+
+      <div v-if="materialsType==1" class="materials_header_list">
+        <span>采购方式：</span>
+        <van-radio-group v-model="materialsPlan">
+          <van-radio name="1">计划采购</van-radio>
+          <van-radio name="2">临时采购</van-radio>
+        </van-radio-group>
+      </div>
+
+      <div v-if="materialsPlan==1 && materialsType==1" class="materials_list materials_border">
+        <div>采购批次：</div>
+        <div @click="projectSelect">
+          {{materialsNumber?materialsNumber:'请选择采购批次'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div
+        v-if="materialsPlan==2 || materialsType==2"
+        class="materials_list_small materials_border"
+      >
+        <div>楼栋：</div>
+        <div @click="glassSelect">
+          {{options.BuildName?options.BuildName:'请选择楼栋'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div v-if="materialsPlan==2 || materialsType==2" class="materials_list materials_border">
+        <div>规格型号：</div>
+        <div @click="thingSelect">
+          {{options.Specialty?options.Specialty:'请选择型号'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div v-if="materialsType==2" class="materials_list_small materials_border">
+        <div>楼层：</div>
+        <div @click="classSelect">
+          {{materialclass}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div
+        v-if="materialsType==1 && materialsPlan==2"
+        class="materials_list_small materials_border"
+      >
+        <div>楼层：</div>
+        <div @click="classSelect">
+          {{options.Floor?options.Floor:'请选择楼层'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div v-if="materialsPlan==2 || materialsType==2" class="materials_list materials_border">
+        <div>物资名称：</div>
+        <div @click="nameSelect">
+          {{options.ResourceName?options.ResourceName:'请选择物资'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div
+        v-if="materialsPlan==2 && materialsType==1"
+        class="materials_list_largin materials_border"
+      >
+        <div>采购需求量：</div>
+        <div>
+          <input type="number" placeholder="采购需求数量" v-model="needNumber">
+        </div>
+      </div>
+
+      <div v-if="materialsPlan==2 && materialsType==1 " class="materials_list materials_border">
+        <div>需求时间：</div>
+        <div @click="getTimeShow">
+          {{getTime?getTime:'请选择时间'}}
+          <van-icon name="arrow" class="materials_list_span"/>
+        </div>
+      </div>
+
+      <div v-if="materialsPlan==2 && materialsType==1" class="materials_list materials_border">
+        <div>已入库：</div>
+        <div>
+          <input type="number" placeholder="已入库数量" v-model="alreadyNumber">
+        </div>
+      </div>
+
+      <div v-if="materialsPlan==2 && materialsType==1" class="materials_list materials_border">
+        <div>本次入库：</div>
+        <div>
+          <input type="number" placeholder="入库数量" v-model="thisNumber">
+        </div>
+      </div>
+
+      <div v-if="materialsType==2" class="materials_list materials_border">
+        <div>本次出库：</div>
+        <div>
+          <input type="number" placeholder="出库数量" v-model="outThing">
+        </div>
+      </div>
+
+      <div
+        v-if="materialsPlan==2 || materialsType==2"
+        @click="addTable"
+        class="materials_list materials_border materials_text"
+      >
+        <span>
+          <img src="../../../assets/imgs/materials_add.png" alt>添加
+        </span>
+      </div>
+    </div>
+    <!-- 入库--采购 -->
+    <div v-show="materialsPlan==1 && materialsType==1 " class="materials_table">
+      <el-table
+        style="width:100%;box-sizing:border-box;"
+        :data="buyThingTable"
+        :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+      >
+        <el-table-column prop="ResourceName" label="物资名称" align="center"></el-table-column>
+        <el-table-column prop="ThisPurchaseNum" label="采购需求量" align="center"></el-table-column>
+        <el-table-column prop="InNum" label="已入库" align="center"></el-table-column>
+        <el-table-column label="本次入库" align="center">
+          <template slot-scope="scope">
+            <input
+              v-model="buyThingTable[scope.$index].CurrentInNum"
+              :placeholder="buyThingTable[scope.$index].Unit"
+              type="number"
+              name="num"
+              class="table_input"
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 入库-临时采购 -->
+    <div v-show="materialsPlan==2 && materialsType==1" class="materials_table_largin">
+      <el-table
+        style="width:100%;box-sizing:border-box;"
+        :data="addTableNumber"
+        :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+      >
+        <el-table-column label="操作" align="center">
+          <template slot-scope="scope2">
+            <a @click="handleDelete(scope2.$index)">
+              <img
+                class="materials_table_img"
+                src="../../../assets/imgs/materials_del.png"
+                alt="图片"
+              >
+            </a>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ResourceName" label="物资名称" align="center"></el-table-column>
+        <el-table-column prop="Spec" label="规格型号" align="center"></el-table-column>
+        <el-table-column prop="BuildName" label="楼栋" align="center"></el-table-column>
+        <el-table-column prop="ThisPurchaseNum" label="采购需求量" align="center"></el-table-column>
+        <el-table-column prop="DemandTime" label="需求时间" align="center"></el-table-column>
+        <el-table-column prop="InNum" label="已入库" align="center"></el-table-column>
+        <el-table-column prop="CurrentInNum" label="本次入库" align="center"></el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 出库表格 -->
+    <div v-show="materialsType==2" class="materials_table_largin">
+      <el-table
+        style="width:100%;box-sizing:border-box;"
+        :data="delTableNumber"
+        :header-cell-style="{'background-color':'#5A92FF','color':'#ffffff'}"
+      >
+        <el-table-column>
+          <template slot-scope="scope1">
+            <a @click="delDelete(scope1.$index)">
+              <img
+                class="materials_table_img"
+                src="../../../assets/imgs/materials_del.png"
+                alt="图片"
+              >
+            </a>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ResourceName" label="物资名称" align="center"></el-table-column>
+        <el-table-column prop="Spec" label="规格型号" align="center"></el-table-column>
+        <el-table-column prop="BuildName" label="楼栋" align="center"></el-table-column>
+        <el-table-column prop="classNumber" label="楼层" align="center"></el-table-column>
+        <el-table-column prop="allNumber" label="施工预算量" align="center"></el-table-column>
+        <el-table-column prop="already" label="已出库" align="center"></el-table-column>
+        <el-table-column prop="hasNumber" label="库存" align="center"></el-table-column>
+        <el-table-column prop="thisnumber" label="本次出库" align="center"></el-table-column>
+      </el-table>
+    </div>
+
+    <div class="project-title flex">原始凭证</div>
+    <div class="uploader m20 flex">
+      <template v-if="photoList.length">
+        <div
+          v-for="(item,index) in photoList"
+          :key="index"
+          class="van-uploader-list"
+          @click="cancelPhoto(index)"
+        >
+          <img :src="item.TokenUrL+item.smallPhotoURL">
+        </div>
+      </template>
+      <div v-if="photoList.length<3" class="van-uploader" @click="selectPhoto">
+        <img src="../../user/user_assets/imgs/up-proof.png">
+      </div>
+      <div v-if="photoList.length<2" class="uploader-tip">最多上传3张</div>
+    </div>
+
+    <div v-if="materialsType==1" class="materials_list materials_border">
+      <div>入库时间：</div>
+      <div @click="beginTimeSelect">
+        {{beginTime ? beginTime:'请选择入库时间'}}
+        <van-icon name="arrow" class="materials_list_span"/>
+      </div>
+    </div>
+
+    <div v-if="materialsType==2" class="materials_list materials_border materials_margin">
+      <div>出库时间：</div>
+      <div @click="outTimeSelect">
+        {{outTime?outTime:'请选择出库时间'}}
+        <van-icon name="arrow" class="materials_list_span"/>
+      </div>
+    </div>
+
+    <div v-if=" materialsType==2" class="materials_list materials_border">
+      <div>领料人：</div>
+      <div @click="peopleSelect">
+        {{getpeople?getpeople:'请选择领料人'}}
+        <van-icon name="arrow" class="materials_list_span"/>
+      </div>
+    </div>
+
+    <div v-if="materialsType==1" class="materials_foot">
+      <van-button class="btn" square type="primary" block @click="searchAllTable">确认入库</van-button>
+    </div>
+
+    <div v-if="materialsType==2" class="materials_foot">
+      <van-button class="btn" square type="primary" block @click="searchoutTable">确认出库</van-button>
+    </div>
+
+    <van-popup v-model="timeShow" position="bottom">
+      <van-datetime-picker
+        v-model="currentDate"
+        @confirm="closeTime"
+        @cancel="cancel"
+        :formatter="formatter"
+        type="date"
+      />
+    </van-popup>
+
+    <!-- 上拉菜单--每次点击事件-传入可以选择的值-然后再把值传入 -->
+    <van-actionsheet v-model="showSelect" :actions="actions" item-height="60" @select="onSelect"/>
+
+    <van-actionsheet v-model="phone_show">
+      <van-uploader
+        :after-read="onRead"
+        accept="image/jpeg"
+        capture="camera"
+        class="upload-file-item"
+      >
+        <div>拍摄</div>
+      </van-uploader>
+      <van-uploader :after-read="onRead" class="upload-file-item">
+        <div>从手机相册选择</div>
+      </van-uploader>
+      <div class="upload-file-item cancel" @click="uploadCancel">取消</div>
+    </van-actionsheet>
+  </div>
+</template>
+
+<script type='textecmascript-6'>
+import {
+  getPurchaseBatch,
+  getBatchDetails,
+  submitIn,
+  uploadingPic,
+  getBuildList,
+  getSpecialtyList,
+  getFloorList,
+  getResourceList
+} from "../../../assets/js/scopeManage.js";
+export default {
+  data() {
+    return {
+      options: {
+        BuildName: "", // 楼栋
+        Specialty: "", // 专业
+        Floor: "", // 楼层
+        ResourceName: "" // 物资类别
+      },
+      SpecialtyList: [],
+      BuildNameList: [],
+      purchaseBatchList: [],
+      purachseid: "",
+      materialsType: "1", //入库/出库
+      materialsPlan: "1", //计划采购/临时采购
+      materialsNumber: "",
+      actions: [], //上拉菜单--总的数据集合
+      showSelect: false, //上拉菜单--显示
+      selectNumer: 1,
+      //入库采购
+      buyThingTable: [],
+      phone_show: false,
+
+      photoList: [],
+      timeShow: false, //时间模态框
+      currentDate: new Date(),
+      beginTime: "", //入库时间
+      timeNumber: 1,
+      materialsName: "请选择名称", //物资名称
+      materialsThing: "请选择规格型号",
+      materialsGlass: "请选择楼栋",
+      needNumber: "", //采购需求量
+      getTime: "", //需求时间
+      alreadyNumber: "", //已入库
+      thisNumber: "", //本次入库
+      materialclass: "请选择楼层",
+      outThing: "", //本次出库
+      getpeople: "",
+      outTime: "", //出库时间
+      //入库临时采购
+      addTableNumber: [],
+      //出库表格
+      delTableNumber: []
+    };
+  },
+  created() {
+    getBuildList(this, res => {
+      this.BuildNameList = res.map(item => {
+        return {
+          name: item.text,
+          value: item.text
+        };
+      });
+      this.BuildNameList.splice(0, 1);
+    });
+    getPurchaseBatch(this, res => {
+      this.purchaseBatchList = res.map(item => {
+        return {
+          name: item.Code,
+          value: item.ID
+        };
+      });
+    });
+  },
+  methods: {
+    // 提交入库
+    searchAllTable() {
+      if (this.beginTime == "") {
+        this.$message({
+          message: "入库时间不能为空！",
+          type: "warning"
+        });
+        return;
+      }
+      let listItems = [];
+      if (this.materialsPlan == 1) {
+        listItems = this.buyThingTable.filter(item => {
+          return item.CurrentInNum !== "";
+        });
+      } else if (this.materialsPlan == 2) {
+        listItems = this.addTableNumber;
+      }
+
+      let par = {
+        model: {
+          InType: this.materialsPlan, // 入库类型
+          InDate: this.beginTime, // 入库时间
+          PurchaseID: this.purachseid, // 批次ID
+          PurchaseCode: this.materialsNumber // 批次code
+        },
+        listItems,
+        infiles: this.photoList
+      };
+      submitIn(this, par, () => {});
+    },
+    //删除照片
+    cancelPhoto(index) {
+      this.$dialog
+        .confirm({
+          title: "删除确认",
+          message: "确认删除照片？",
+          className: "delecet_photo"
+        })
+        .then(() => {
+          // on confirm
+          this.photoList.splice(index, 1);
+        })
+        .catch(() => {
+          // on cancel
+        });
+    },
+    //获取照片
+    selectPhoto() {
+      if (!this.phone_show) {
+        this.phone_show = true;
+      } else {
+        this.phone_show = false;
+      }
+    },
+    uploadCancel() {
+      this.phone_show = false;
+    },
+    // 上传图片
+    onRead(file, detail) {
+      uploadingPic(this, file, detail);
+    },
+    //采购批次
+    projectSelect() {
+      this.showSelect = true;
+      this.selectNumer = 1;
+      this.actions = this.purchaseBatchList;
+    },
+    //物资名称
+    nameSelect() {
+      this.showSelect = true;
+      this.selectNumer = 2;
+      this.actions = this.ResorceNameList;
+    },
+    //物资型号
+    thingSelect() {
+      this.showSelect = true;
+      this.selectNumer = 3;
+      this.actions = this.SpecialtyList;
+    },
+    //楼栋
+    glassSelect() {
+      this.showSelect = true;
+      this.selectNumer = 4;
+      this.actions = this.BuildNameList;
+    },
+    //楼层
+    classSelect() {
+      this.showSelect = true;
+      this.selectNumer = 5;
+      this.actions = this.FloorbyList;
+    },
+    //领料人
+    peopleSelect() {
+      this.showSelect = true;
+      this.selectNumer = 6;
+      this.actions = [
+        { name: "李国忠", value: "1" },
+        { name: "陈国栋", value: "2" }
+      ];
+    },
+    //需求时间
+    getTimeShow() {
+      this.timeShow = true;
+      this.timeNumber = 2;
+    },
+    //出库时间
+    outTimeSelect() {
+      this.timeShow = true;
+      this.timeNumber = 3;
+    },
+    //点击上拉菜单的选项时候
+    onSelect(item) {
+      if (this.selectNumer == 1) {
+        this.materialsNumber = item.name; //采购批次
+        this.purachseid = item.value;
+      } else if (this.selectNumer == 2) {
+        this.options.ResourceName = item.name; //物资名称
+      } else if (this.selectNumer == 3) {
+        this.options.Specialty = item.name; //物资型号
+      } else if (this.selectNumer == 4) {
+        this.options.BuildName = item.name; //楼栋
+      } else if (this.selectNumer == 5) {
+        this.options.Floor = item.name; //楼层
+      } else if (this.selectNumer == 6) {
+        this.getpeople = item.name; //领料人
+      }
+      this.showSelect = false;
+    },
+    goBack() {
+      this.$router.push({ path: "/#" });
+    },
+    //上传图片的时候
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    //上传图片的时候
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
+    },
+    //点击入库时间
+    beginTimeSelect() {
+      this.timeShow = true;
+      this.timeNumber = 1;
+    },
+    //时间上拉菜单上的--确定
+    closeTime(value) {
+      if (this.timeNumber == "1") {
+        console.log("110");
+        this.beginTime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      } else if (this.timeNumber == "2") {
+        this.getTime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      } else if (this.timeNumber == "3") {
+        this.outTime =
+          value.getFullYear() +
+          "/" +
+          (value.getMonth() + 1) +
+          "/" +
+          value.getDate();
+      }
+      this.timeShow = false;
+    },
+    //时间上拉菜单上的--取消
+    cancel() {
+      this.timeShow = false;
+    },
+    formatter(type, value) {
+      if (type === "year") {
+        return `${value}年`;
+      } else if (type === "month") {
+        return `${value}月`;
+      } else if (type === "day") {
+        return `${value}日`;
+      }
+      return value;
+    },
+    //点击-临时采购表格中的删除
+    handleDelete(index) {
+      this.addTableNumber.splice(index, 1);
+    },
+    delDelete(index) {
+      this.delTableNumber.splice(index, 1);
+    },
+    //点击-临时采购添加按钮
+    addTable() {
+      if (this.materialsType == 2) {
+        //出库--表格添加
+        let text = {
+          ResourceName: this.options.ResourceName, //物资名称
+          Spec: this.options.Specialty, //型号
+          BuildName: this.options.BuildName, //楼栋
+          Floor: this.options.Floor, //楼层
+          DemandNum: "", //施工预算总量
+          already: "", //已出库
+          hasNumber: "", //库存
+          thisnumber: this.outThing //本次出库
+        };
+        this.delTableNumber.push(text);
+      } else {
+        //入库临时采购-添加
+        let text = {
+          ResourceName: this.options.ResourceName, //物资名称
+          Spec: this.options.Specialty, //型号
+          BuildName: this.options.BuildName, //楼栋
+          Floor: this.options.Floor, //楼层
+
+          DemandTime: this.getTime, //需求时间
+          DemandNum: this.needNumber, //需求总量
+          InNum: this.alreadyNumber, //已入库
+          CurrentInNum: this.thisNumber //本次入库
+        };
+        this.addTableNumber.push(text);
+      }
+      console.log("120");
+    },
+    //点击出库按钮
+    searchoutTable() {},
+    // 数据复原
+    recoverData(val) {
+      this.photoList = [];
+      this.options = {
+        BuildName: "", // 楼栋
+        Specialty: "", // 专业
+        Floor: "", // 楼层
+        ResourceName: "" // 物资类别
+      };
+      if (val == 1) {
+        this.outThing = "";
+        this.delTableNumber = [];
+        this.getpeople = "";
+        this.outTime = "";
+      }
+      if (val == 2) {
+        this.beginTime='';
+        this.materialsNumber = "";
+        this.buyThingTable = [];
+
+        this.addTableNumber = [];
+        this.needNumber = "";
+        this.getTime = "";
+        this.alreadyNumber = "";
+        this.outThing = "";
+      }
+      if (val == 3) {
+        this.beginTime= '';
+        this.materialsNumber = "";
+        this.buyThingTable = [];
+      }
+      if (val == 4) {
+        this.beginTime = '';
+        this.addTableNumber = [];
+        this.needNumber = "";
+        this.getTime = "";
+        this.alreadyNumber = "";
+        this.outThing = "";
+      }
+    }
+  },
+  watch: {
+    // 楼层
+    "options.Floor": {
+      handler(val, oldval) {
+        if (val != "") {
+          this.ResorceNameList = [];
+          this.options.ResourceName = "";
+          getResourceList(this, res => {
+            this.ResorceNameList = res.map(item => {
+              return {
+                name: item.text,
+                value: item.text
+              };
+            });
+          });
+          this.ResorceNameList.splice(0, 1);
+        }
+      }
+    },
+    // 专业
+    "options.Specialty": {
+      handler(val, oldval) {
+        if (val != "") {
+          this.FloorbyList = [];
+          this.options.Floor = "";
+
+          this.ResorceNameList = [];
+          this.options.ResourceName = "";
+          getFloorList(this, res => {
+            this.FloorbyList = res.map(item => {
+              return {
+                name: item.text,
+                value: item.text
+              };
+            });
+          });
+          this.FloorbyList.splice(0, 1);
+        }
+      }
+    },
+    "options.BuildName"(val) {
+      this.SpecialtyList = [];
+      this.options.Specialty = "";
+
+      this.FloorbyList = [];
+      this.options.Floor = "";
+
+      this.ResorceNameList = [];
+      this.options.ResourceName = "";
+
+      getSpecialtyList(this, res => {
+        this.SpecialtyList = res.map(item => {
+          return {
+            name: item.text,
+            value: item.text
+          };
+        });
+        this.SpecialtyList.splice(0, 1);
+      });
+    },
+    materialsNumber(val) {
+      if (val !== "") {
+        getBatchDetails(this, { purachseid: this.purachseid });
+      }
+    },
+    materialsType(val) {
+      this.recoverData(val);
+    },
+    materialsPlan(val) {
+      if (val == 1) {
+        this.recoverData(3);
+      }
+      if (val == 2) {
+        this.recoverData(4);
+      }
+    }
+  }
+};
+</script>
+<style lang='stylus' scoped rel='stylesheet/stylus'>
+@import '../../user/user_assets/base.css';
+
+.container-materials {
+  width: 100%;
+  background-color: #F6F8FA;
+  font-size: 30px;
+
+  .m20 {
+    padding: 0 0.32rem;
+  }
+
+  .project-title {
+    font-size: 28px;
+    font-family: SourceHanSansCN-Medium;
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    height: 1.18rem;
+    padding: 0 0.32rem;
+    background-color: #f6f8fa;
+  }
+
+  .upload-file-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 88px;
+    font-size: 32px;
+    color: #333;
+  }
+
+  .cancel {
+    color: #666 !important;
+  }
+
+  .uploader {
+    background-color: #F6F8FA;
+    padding-bottom: 20px;
+
+    .van-uploader {
+      margin-right: 10px;
+      width: 2.66rem;
+      height: 2.66rem;
+      background: rgba(255, 255, 255, 1);
+      border-radius: 0.11rem;
+      border: 0.027rem solid rgba(189, 193, 198, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 0.9rem;
+        height: 0.9rem;
+        display: block;
+      }
+    }
+
+    .van-uploader-list {
+      margin-right: 10px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 1);
+      border-radius: 0.11rem;
+      border: 0.027rem solid rgba(189, 193, 198, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 200px;
+        height: 200px;
+        display: block;
+      }
+    }
+
+    .uploader-tip {
+      font-size: 26px;
+      font-family: SourceHanSansCN-Regular;
+      font-weight: 400;
+      color: rgba(153, 153, 153, 1);
+      align-self: flex-end;
+      margin-left: 0.16rem;
+    }
+  }
+
+  .materials_header {
+    width: 100%;
+  }
+
+  .materials_header_type {
+    height: 88px;
+    line-height: 88px;
+    border-bottom: 2px solid #EDEDED;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+    margin-bottom: 20px;
+  }
+
+  .materials_header_type>span {
+    display: inline-block;
+    float: left;
+    width: 15%;
+  }
+
+  .materials_header_list {
+    height: 88px;
+    line-height: 88px;
+    border-bottom: 2px solid #EDEDED;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .materials_header_list>span {
+    display: inline-block;
+    float: left;
+    width: 30%;
+  }
+
+  .materials_list {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .materials_border {
+    border-bottom: 2px solid #EDEDED;
+  }
+
+  .materials_list>div:first-child {
+    width: 24%;
+    display: inline-block;
+    float: left;
+  }
+
+  .materials_list>div:last-child {
+    width: 76%;
+    display: inline-block;
+    float: left;
+    padding-left: 20px;
+    box-sizing: border-box;
+    color: #A7A7A7;
+  }
+
+  .materials_list_largin {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .materials_list_largin>div:first-child {
+    width: 28%;
+    display: inline-block;
+    float: left;
+  }
+
+  .materials_list_largin>div:last-child {
+    width: 72%;
+    display: inline-block;
+    float: left;
+    padding-left: 20px;
+    box-sizing: border-box;
+    color: #A7A7A7;
+  }
+
+  .materials_list_small {
+    height: 88px;
+    line-height: 88px;
+    font-size: 30px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    padding: 0px 20px;
+  }
+
+  .materials_list_small>div:first-child {
+    width: 16%;
+    display: inline-block;
+    float: left;
+  }
+
+  .materials_list_small>div:last-child {
+    width: 84%;
+    display: inline-block;
+    float: left;
+    padding-left: 20px;
+    box-sizing: border-box;
+    color: #A7A7A7;
+  }
+
+  .materials_list_span {
+    float: right;
+    margin-right: 20px;
+    line-height: 88px;
+  }
+
+  .materials_table {
+    margin-top: 20px;
+  }
+
+  .materials_img p {
+    line-height: 60px;
+    padding-left: 20px;
+  }
+
+  .materials_img>div {
+    background-color: #F6F8FA;
+  }
+
+  .materials_margin {
+    margin-top: 20px;
+  }
+
+  .materials_foot {
+    padding: 0.4rem 0.32rem;
+    background: rgba(246, 248, 250, 1);
+
+    .van-button--primary {
+      height: 1.18rem;
+      background: rgba(90, 147, 255, 1);
+      border-radius: 0.15rem;
+      font-size: 28px;
+      font-family: SourceHanSansCN-Medium;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 1);
+    }
+  }
+
+  .materials_button {
+    background: rgba(100, 155, 255, 1);
+    box-shadow: 0px 3px 7px 0px rgba(91, 140, 237, 0.13);
+    border-radius: 8px;
+    font-size: 28px;
+    font-family: PingFang-SC-Bold;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+    padding: 17px 146px;
+    border: 0;
+  }
+
+  .materials_list img {
+    width: 30px;
+    height: 30px;
+    margin-right: 20px;
+  }
+
+  .materials_text {
+    color: #A6A6A6;
+  }
+
+  .materials_table_largin {
+    width: 100%;
+    overflow: scroll;
+    max-height: 400px;
+  }
+
+  .materials_table_img {
+    width: 30px;
+  }
+
+  height: 30px;
+}
+</style>
+<style>
+.container-materials .el-table th > .cell,
+.container-procurement-list .temporary thead th {
+  font-size: 28px;
+}
+.van-actionsheet__item {
+  line-height: 80px;
+  height: 80px;
+}
+.van-picker__toolbar {
+  height: 60px;
+  line-height: 60px;
+}
+/* 顶部表头 */
+.container-materials .van-nav-bar .van-nav-bar__title {
+  font-size: 36px;
+}
+.container-materials .van-nav-bar {
+  height: 88px;
+  line-height: 88px;
+}
+/* 表格样式更改 */
+.container-materials .materials_table .el-table .cell {
+  height: 60px;
+  line-height: 60px;
+  font-size: 24px;
+}
+.container-materials .materials_table .el-table input {
+  border: 3px solid #eeeeee;
+}
+/* 表格样式更改 */
+.container-materials .materials_table_largin .el-table .cell {
+  height: 60px;
+  line-height: 60px;
+  font-size: 24px;
+}
+.ccontainer-materials .materials_table_largin .el-table input {
+  border: 3px solid #eeeeee;
+}
+
+.materials_header_type .van-radio-group .van-radio {
+  display: block;
+  float: left;
+  width: 50%;
+}
+.materials_header_type .van-radio-group {
+  display: block;
+  float: left;
+  width: 77%;
+}
+.materials_header_list .van-radio-group .van-radio {
+  display: block;
+  float: left;
+  width: 50%;
+}
+.materials_header_list .van-radio-group {
+  display: block;
+  float: left;
+  width: 70%;
+}
+</style>
