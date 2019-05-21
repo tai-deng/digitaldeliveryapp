@@ -537,11 +537,7 @@ export default {
     },
     //返回
     goBack() {
-      if(typeof this.active == "undefined"){
-        this.$router.go(-1)
-      }else{
-        this.$router.push({ path: "/Risk", query: {active: this.active} });
-      }
+      this.$router.push({ path: "/Risk", query: {active: this.active} });
     },
     //跳转接收人
     // goReceiver() {

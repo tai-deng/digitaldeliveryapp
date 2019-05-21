@@ -46,18 +46,6 @@ export const GetTaskList = params => {
 export const QueryPublishList = params => {
   return http.fetchPost('Risk/QueryPublishList', params)
 }
-// 用户点赞
-export const ClickLike = params => {
-  return http.fetchPost('Risk/ClickLike', params)
-}
-// 取消点赞
-export const CancelLike = params => {
-  return http.fetchPost('Risk/CancelLike', params)
-}
-
-
-
-
 
 /**
  *
@@ -208,6 +196,10 @@ export const AddStoreOut = params => {
 export const SaveChange = params => {
   return http.fetchPost('RangeManage/SaveChange', params)
 }
+// 根据构件名称获取ID
+export const QueryAllElementCateNameByInfo = params => {
+  return http.fetchPost('ListImport/QueryAllElementCateNameByInfo', params)
+}
 // 根据相关信息获取采购年明细
 export const QueryResourceSumItemReport = params => {
   return http.fetchPost('RangeManage/QueryResourceSumItemReport', params)
@@ -307,10 +299,6 @@ export const GetConstructElementNamebyBuildingSp = params => {
 //QueryWorkBusiList 获取标题的列表 Integrate/QueryWorkBusiList
 export const QueryWorkBusiList = params => {
   return http.fetchPost('Integrate/QueryWorkBusiList', params)
-}
-//沟通详情提交工作流操作 Communicate/DoWork
-export const DoWork = params => {
-  return http.fetchPost('Communicate/DoWork', params)
 }
 
 /**
